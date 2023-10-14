@@ -1,0 +1,23 @@
+{
+    "name": "ARON günlük işler yazdırma",
+    "version": "1.0",
+    "manifest_version": 3,
+    "description": "ARON teknisyene ait günlük işler yazdırma sayfasını özelleştirir.",
+    "icons": {
+        "128": "printer.png"
+    },
+    "permissions": [
+        "activeTab",
+        "file:///*"
+    ],
+    "action": {
+        "default_icon": "printer.png"
+    },
+    "content_scripts": [
+        {
+            "matches": ["file:///*export*.html"],
+            "js": ["contentScript.js"],
+            "css": ["style.css"]
+        }
+    ]
+}
