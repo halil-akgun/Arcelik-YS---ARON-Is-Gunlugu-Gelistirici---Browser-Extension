@@ -1,14 +1,42 @@
 const editButton = document.createElement("button");
 const body = document.querySelector("body");
 let table = document.querySelector("table");
-let rows = table.querySelectorAll("tr");
+let rows = table?.querySelectorAll("tr");
+let oasisToken;
+
+// Arka plan betiği ile iletişim kurmak için bir port oluştur
+const port = chrome.runtime.connect({ name: "oasis-get-token" });
+
+// Arka plan betiği ile 'getTokenFromOasis' talebini başlat
+port.postMessage({ action: "getTokenFromOasis" });
+
+// Port üzerinden veri alışverişi yapmak için bir mesaj dinleyici ekle
+port.onMessage.addListener((message) => {
+    if (message.token) {
+        console.log("Oasis'ten alınan token:", message.token);
+        oasisToken = message.token;
+    } else {
+        console.error("Token bilgisi bulunamadı.");
+    }
+});
+
+
 
 function editEditButton() {
+
+    // Sayfanın URL'sini al
+    const currentUrl = window.location.href;
+
+    // 'export' kelimesini içermiyor veya URL 'file://' ile başlamıyorsa düzenleme düğmesini eklemeyi durdur
+    if (!currentUrl.includes("export") || !currentUrl.startsWith("file://")) {
+        return;
+    }
 
     editButton.textContent = "Düzenle";
     editButton.style.position = "fixed";
     editButton.style.top = "20px";
     editButton.style.right = "20px";
+    editButton.classList.add("print-hidden");
 
     editButton.addEventListener("click", editPage);
 
@@ -48,7 +76,7 @@ function editPage() {
 
 
     // İsimleri dropdown'a ekle
-    const names = getNamesFromLocalStorage();
+    let names = getNamesFromLocalStorage();
     createDropdown(nameDropdown, names);
 
     nameDropdownPlus.addEventListener("click", () => {
@@ -65,11 +93,12 @@ function editPage() {
         if (name) {
             deleteNameFromDropdownAndLocalStorage(nameDropdown, names, name.trim());
         }
+        names = getNamesFromLocalStorage();
     });
 
 
     // Plakaları dropdown'a ekle
-    const plates = getPlatesFromLocalStorage();
+    let plates = getPlatesFromLocalStorage();
     createDropdown(plateDropdown, plates);
 
     plateDropdownPlus.addEventListener("click", () => {
@@ -86,6 +115,7 @@ function editPage() {
         if (plate) {
             deletePlateFromDropdownAndLocalStorage(plateDropdown, plates, plate.trim());
         }
+        plates = getPlatesFromLocalStorage();
     });
 
     date.textContent = "Tarih: ";
@@ -207,18 +237,18 @@ function editPage() {
             tenthCell.appendChild(tenthInput);
 
             // 11. hücreye dropdown (seçim kutusu) ekle
-            const eleventhSelect = document.createElement("select");
+            const paymentMethodSelect = document.createElement("select");
 
             // Dropdown seçenekleri
-            const options = ["G", "N", "K"];
+            const options = ["G", "N", "K", "H"];
             options.forEach((optionText) => {
                 const option = document.createElement("option");
                 option.value = optionText;
                 option.textContent = optionText;
-                eleventhSelect.appendChild(option);
+                paymentMethodSelect.appendChild(option);
             });
 
-            eleventhCell.appendChild(eleventhSelect);
+            eleventhCell.appendChild(paymentMethodSelect);
         }
     });
 
@@ -227,12 +257,12 @@ function editPage() {
     const addDivBottomTable = document.createElement("div");
     const addRowButton = document.createElement("button");
     addRowButton.textContent = "Yeni Satır Ekle";
-    addRowButton.classList.add("new-row-button");
+    addRowButton.classList.add("new-row-button", "print-hidden");
     addDivBottomTable.appendChild(addRowButton);
     body.appendChild(addDivBottomTable);
     addRowButton.addEventListener("click", createRow);
 
-    // Genel toplamı hesapla ve ekle
+    // Genel toplam için div oluştur
     const totalDiv = document.createElement("div");
     totalDiv.id = "totalDiv";
     const totalTable = document.createElement("table");
@@ -258,6 +288,17 @@ function editPage() {
     totalCreditRow.appendChild(totalCreditCell);
     totalCreditRow.appendChild(totalCreditCellAmount);
     totalTable.appendChild(totalCreditRow);
+
+    // Havale toplamı hesapla ve ekle
+    const totalRemittanceRow = document.createElement("tr");
+    const totalRemittanceCell = document.createElement("td");
+    const totalRemittanceCellAmount = document.createElement("td");
+    totalRemittanceCell.textContent = "Havale Toplam:";
+    const remittanceTotalAmount = calculateTotalAmount('H');
+    totalRemittanceCellAmount.textContent = remittanceTotalAmount.toFixed(2);
+    totalRemittanceRow.appendChild(totalRemittanceCell);
+    totalRemittanceRow.appendChild(totalRemittanceCellAmount);
+    totalTable.appendChild(totalRemittanceRow);
 
     // Genel toplamı ekle
     const totalAmountRow = document.createElement("tr");
@@ -287,22 +328,27 @@ function editPage() {
 
     // Not icin textarea ekle
     const noteDiv = document.createElement("div");
-    noteDiv.classList = "grow-wrap";
+    noteDiv.classList.add("grow-wrap");
     const note = document.createElement("textarea");
     note.placeholder = "Not:";
     note.id = "note";
+    note.classList.add("print-hidden");
     noteDiv.appendChild(note);
     body.appendChild(noteDiv);
 
     // Textareanın otomatik büyümesini sağlayan dinleyici ekle
-    const growers = document.querySelectorAll(".grow-wrap");
-    growers.forEach((grower) => {
-        const textarea = grower.querySelector("textarea");
-        textarea.addEventListener("input", () => {
-            grower.dataset.replicatedValue = textarea.value;
-        });
+    const textarea = noteDiv.querySelector("textarea");
+    textarea.addEventListener("input", () => {
+        noteDiv.dataset.replicatedValue = textarea.value;
+        if (textarea.value.length > 0) {
+            textarea.classList.remove("print-hidden");
+        } else {
+            textarea.classList.add("print-hidden");
+        }
     });
 
+
+    populateDescriptionWithNakliyeMontaj();
 
     updateTotalAmount(); // ilk açılışta genel toplamı 0 iken "0'larin" gözükmemesi için
 
@@ -371,18 +417,21 @@ function calculateTotalAmount(paymentType) {
 function updateTotalAmount() {
     const cashTotalAmount = calculateTotalAmount('N');
     const creditTotalAmount = calculateTotalAmount('K');
+    const remittanceTotalAmount = calculateTotalAmount('H');
 
     const totalTable = document.querySelector("#totalDiv table");
     const totalCells = totalTable.querySelectorAll("td");
 
     totalCells.forEach((cell, index) => {
         if (index === 1) {
-            cell.textContent = (cashTotalAmount + creditTotalAmount) ? cashTotalAmount.toFixed(2) + " ₺" : "";
+            cell.textContent = (cashTotalAmount + creditTotalAmount + remittanceTotalAmount) ? cashTotalAmount.toFixed(2) + " ₺" : "";
         } else if (index === 3) {
-            cell.textContent = (cashTotalAmount + creditTotalAmount) ? creditTotalAmount.toFixed(2) + " ₺" : "";
+            cell.textContent = (cashTotalAmount + creditTotalAmount + remittanceTotalAmount) ? creditTotalAmount.toFixed(2) + " ₺" : "";
         } else if (index === 5) {
-            cell.textContent = (cashTotalAmount + creditTotalAmount)
-                ? (cashTotalAmount + creditTotalAmount).toFixed(2) + " ₺" : "";
+            cell.textContent = (cashTotalAmount + creditTotalAmount + remittanceTotalAmount) ? remittanceTotalAmount.toFixed(2) + " ₺" : "";
+        } else if (index === 7) {
+            cell.textContent = (cashTotalAmount + creditTotalAmount + remittanceTotalAmount)
+                ? (cashTotalAmount + creditTotalAmount + remittanceTotalAmount).toFixed(2) + " ₺" : "";
         }
     });
 }
@@ -452,4 +501,25 @@ function clearDropdown(dropdown) {
     while (dropdown.firstChild) {
         dropdown.removeChild(dropdown.firstChild);
     }
+}
+
+function populateDescriptionWithNakliyeMontaj() {
+    // Satırları al
+    const dataRows = [...rows].slice(1); // İlk satır (başlık satırı) dışındaki tüm satırları seç
+
+    dataRows.forEach((row) => {
+        const tds = row.querySelectorAll("td");
+        if (tds.length >= 7) {
+            const reason = tds[4].textContent.trim();
+            const descriptionCell = tds[8].querySelector("textarea");
+
+            if (reason.toLowerCase().includes("nakliye montaj")) {
+                descriptionCell.value = "Nakliye Montaj";
+            } else if (reason.toLowerCase().includes("montaj")) {
+                descriptionCell.value = "Montaj";
+            } else if (reason.toLowerCase().includes("nakliye")) {
+                descriptionCell.value = "Nakliye";
+            }
+        }
+    });
 }

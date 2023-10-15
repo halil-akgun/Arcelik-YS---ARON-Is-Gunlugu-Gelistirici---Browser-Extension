@@ -1,6 +1,6 @@
 {
     "name": "ARON günlük işler yazdırma",
-    "version": "1.0",
+    "version": "1.2",
     "manifest_version": 3,
     "description": "ARON teknisyene ait günlük işler yazdırma sayfasını özelleştirir.",
     "icons": {
@@ -8,16 +8,27 @@
     },
     "permissions": [
         "activeTab",
-        "file:///*"
+        "https://oasis.arcelik.com/*",
+        "file:///*export*.html",
+        "storage",
+        "scripting",
+        "tabs"
+    ],
+    "host_permissions": [
+        "https://oasis.arcelik.com/*",
+        "file:///*export*.html"
     ],
     "action": {
         "default_icon": "printer.png"
     },
     "content_scripts": [
         {
-            "matches": ["file:///*export*.html"],
+            "matches": ["https://oasis.arcelik.com/*", "file:///*export*.html"],
             "js": ["contentScript.js"],
             "css": ["style.css"]
         }
-    ]
+    ],
+    "background": {
+        "service_worker": "background.js"
+      }
 }

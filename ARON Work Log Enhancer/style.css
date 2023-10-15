@@ -1,9 +1,5 @@
 @media print {
 
-    body button {
-        display: none;
-    }
-
     textarea::-webkit-resizer,
     textarea::-webkit-scrollbar {
         display: none !important;
@@ -14,7 +10,7 @@
         display: none !important;
     }
 
-    .new-row-button {
+    .print-hidden {
         display: none;
     }
 

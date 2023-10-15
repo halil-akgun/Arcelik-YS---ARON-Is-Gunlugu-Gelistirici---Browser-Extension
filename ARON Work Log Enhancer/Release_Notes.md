@@ -18,3 +18,15 @@
 - Added "➕" and "➖" buttons for adding and removing technician and vehicle names.
 - Introduced a new section for calculating the total amount.
 - Implemented enhancements to edit fee entries and update the total amount instantly.
+
+
+## Version 1.2
+
+### Enhancements
+
+- Enabled obtaining the token from an open OASIS page in another tab, setting the stage for automatically populating the 'Material' column in the next update.
+- Improved the visibility of the 'Edit' button to be displayed only on the report page after integrating with OASIS.
+- Fixed the issue where when deleting more than one technician or vehicle, all but the last deleted one would come back.
+- Implemented a feature that automatically appends "Nakliye Montaj" to the description when the application reason is "Nakliye Montaj."
+- Added a new payment option: "Remittance".
+- The placeholder for the notes field will no longer appear when the page is printed.

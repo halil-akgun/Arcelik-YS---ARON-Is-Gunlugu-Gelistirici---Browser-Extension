@@ -1,6 +1,6 @@
 # ARON Work Log Enhancer
 
-This repository contains two browser extensions developed for Arcelik authorized service centers. These extensions are designed to enhance the functionality of the ARON system and improve communication with the Oasis Material Management System.
+This repository contains a browser extension developed for Arcelik authorized service centers. This extension is designed to enhance the functionality of the ARON system and improve communication with the Oasis Material Management System.
 
 
 ## ARON Work Log Enhancer Extension
@@ -12,17 +12,6 @@ The ARON Work Log Enhancer extension allows you to customize daily service repor
 
 1. Open your browser's extensions page.
 2. Install the ARON Work Log Enhancer extension by dragging and dropping the folder onto that page.
-
-
-## OASIS Token Connector Extension
-
-The OASIS Token Connector extension is designed to simplify communication between ARON Work Log Enhancer and the Oasis Material Management System. It automatically retrieves the necessary authentication information from the Oasis system and forwards it to ARON Work Log Enhancer.
-
-
-### Installation
-
-1. Open your browser's extensions page.
-2. Install the OASIS Token Connector extension by dragging and dropping the folder onto that page.
 
 
 ## License

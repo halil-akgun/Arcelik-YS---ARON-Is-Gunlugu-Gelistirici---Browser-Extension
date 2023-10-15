@@ -18,3 +18,15 @@
 - Teknisyen ve araç isimlerini eklemek ve çıkarmak için "➕" ve "➖" düğmeleri eklendi.
 - Toplam tutarı hesaplayan yeni bir bölüm eklendi.
 - Ücret girişlerini düzenlemek ve toplam tutarı anlık olarak güncellemek için iyileştirmeler yapıldı.
+
+
+## Sürüm 1.2
+
+### Yenilikler
+
+- Bir sonraki güncellemede 'Malzeme' sütununun otomatik olarak doldurulmasına yönelik aşamayı ayarlayarak, başka bir sekmedeki açık bir OASİS sayfasından jetonun alınması etkinleştirildi.
+- OASİS ile entegrasyon sonrasında 'Düzenle' butonunun görünürlüğü yalnızca rapor sayfasında görüntülenecek şekilde iyileştirildi.
+- Birden fazla teknisyen veya araç silinirken, son silinen dışındakilerin geri gelme sorunu düzeltildi.
+- Başvuru nedeni "Nakliye Montaj" ise, otomatik olarak açıklamaya "Nakliye Montaj" ifadesini ekleyen bir geliştirme yapıldı.
+- Yeni bir ödeme seçeneği eklendi: "Havale".
+- Sayfa yazdırılırken artık not alanı için placeholder görünmeyecek.
