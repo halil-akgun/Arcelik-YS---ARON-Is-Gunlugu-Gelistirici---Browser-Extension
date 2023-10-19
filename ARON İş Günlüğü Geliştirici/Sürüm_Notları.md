@@ -1,11 +1,11 @@
-# ARON Work Log Enhancer Eklentisi Sürüm Notları
+# ARON İş Günlüğü Geliştirici Eklentisi Sürüm Notları
 
 
 ## Sürüm 1.0
 
 ### Yenilikler
 
-- ARON Work Log Enhancer eklentisi sürüm 1.0 yayınlandı.
+- ARON İş Günlüğü Geliştirici eklentisi sürüm 1.0 yayınlandı.
 - Günlük hizmet raporları için ARON tarafından oluşturulan HTML sayfasını özelleştiren temel işlevsellik eklendi.
 - Hizmet kayıtlarını görüntülemek ve düzenlemek için kullanıcı dostu bir arayüz sunuyor.
 
@@ -30,3 +30,10 @@
 - Başvuru nedeni "Nakliye Montaj" ise, otomatik olarak açıklamaya "Nakliye Montaj" ifadesini ekleyen bir geliştirme yapıldı.
 - Yeni bir ödeme seçeneği eklendi: "Havale".
 - Sayfa yazdırılırken artık not alanı için placeholder görünmeyecek.
+
+
+## Sürüm 1.3
+
+### Yenilikler
+- OASİS sitesinden malzeme stok kodları artık otomatik olarak çekilmekte ve bu stok kodları "Malzeme" sütununa otomatik olarak yerleştirilmektedir.
+- Textarea alanları artık otomatik olarak büyüme özelliğine sahiptir. Satır ekledikçe textarea otomatik olarak büyüyecektir.

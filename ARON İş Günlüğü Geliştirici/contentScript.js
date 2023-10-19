@@ -13,7 +13,6 @@ port.postMessage({ action: "getTokenFromOasis" });
 // Port üzerinden veri alışverişi yapmak için bir mesaj dinleyici ekle
 port.onMessage.addListener((message) => {
     if (message.token) {
-        console.log("Oasis'ten alınan token:", message.token);
         oasisToken = message.token;
     } else {
         console.error("Token bilgisi bulunamadı.");
@@ -328,7 +327,6 @@ function editPage() {
 
     // Not icin textarea ekle
     const noteDiv = document.createElement("div");
-    noteDiv.classList.add("grow-wrap");
     const note = document.createElement("textarea");
     note.placeholder = "Not:";
     note.id = "note";
@@ -336,23 +334,15 @@ function editPage() {
     noteDiv.appendChild(note);
     body.appendChild(noteDiv);
 
-    // Textareanın otomatik büyümesini sağlayan dinleyici ekle
-    const textarea = noteDiv.querySelector("textarea");
-    textarea.addEventListener("input", () => {
-        noteDiv.dataset.replicatedValue = textarea.value;
-        if (textarea.value.length > 0) {
-            textarea.classList.remove("print-hidden");
-        } else {
-            textarea.classList.add("print-hidden");
-        }
-    });
-
-
-    populateDescriptionWithNakliyeMontaj();
 
     updateTotalAmount(); // ilk açılışta genel toplamı 0 iken "0'larin" gözükmemesi için
 
     document.body.removeChild(editButton);
+
+    autoGrowTextarea();
+
+    fillDescriptionWithNakliyeMontaj();
+    fillMaterialColumn();
 }
 
 function addEventListenerForTotalAmount() {
@@ -394,6 +384,7 @@ function createRow() {
     table = document.querySelector("table");
     rows = table.querySelectorAll("tr");
 
+    autoGrowTextarea();
     addEventListenerForTotalAmount();
 }
 
@@ -446,13 +437,6 @@ function formatNumber(input) {
 
 function createInputCell(cell) {
     const input = document.createElement("textarea");
-    input.style.width = "100%";
-    // input.style.height = "100%";
-    input.style.padding = "0";
-    input.style.verticalAlign = "middle";
-    input.style.fontSize = "10px";
-    input.style.backgroundColor = "transparent";
-    input.style.fontFamily = "tahoma";
     cell.appendChild(input);
 }
 
@@ -503,7 +487,7 @@ function clearDropdown(dropdown) {
     }
 }
 
-function populateDescriptionWithNakliyeMontaj() {
+function fillDescriptionWithNakliyeMontaj() {
     // Satırları al
     const dataRows = [...rows].slice(1); // İlk satır (başlık satırı) dışındaki tüm satırları seç
 
@@ -522,4 +506,59 @@ function populateDescriptionWithNakliyeMontaj() {
             }
         }
     });
+}
+
+function fillMaterialColumn() {
+
+    // Satırları al
+    const dataRows = [...rows].slice(1); // İlk satır (başlık satırı) dışındaki tüm satırları seç
+
+    dataRows.forEach((row) => {
+        const tds = row.querySelectorAll("td");
+        const receiptNo = tds[7].textContent.trim();
+        const oasisUrl = `https://ysdepo-pilot.arcelik.com/YsDepoYonetimiApi/api/DepoYonetimi/MaterialSearchDetail/${receiptNo}/FisNo/6058`;
+        let headers = new Headers();
+        headers.append("Authorization", `Bearer ${oasisToken}`);
+
+        fetch(oasisUrl, {
+            method: "GET",
+            headers: headers,
+        })
+            .then((response) => response.json())
+            .then((data) => {
+                if (data) {
+                    const materialCell = tds[6].querySelector("textarea");
+                    let materials = "";
+                    data.forEach((material, index) => {
+                        materials += material.MALZEME_STOK_NO;
+                        if (index < data.length - 1) {
+                            materials += ", ";
+                        }
+                    })
+                    materialCell.value = materials;
+                    autoGrowTextarea();
+                }
+            })
+            .catch((error) => {
+                console.error("Hata oluştu:", error);
+            });
+    })
+}
+
+function autoGrowTextarea() {
+    const tx = document.getElementsByTagName("textarea");
+    for (let i = 0; i < tx.length; i++) {
+        tx[i].setAttribute("style", "height:" + (tx[i].scrollHeight) + "px;overflow-y:hidden;");
+        tx[i].addEventListener("input", OnInput, false);
+    }
+
+    function OnInput() {
+        this.style.height = 0;
+        this.style.height = (this.scrollHeight) + "px";
+        if (this.value.length > 0) {
+            this.classList.remove("print-hidden");
+        } else {
+            this.classList.add("print-hidden");
+        }
+    }
 }

@@ -23,8 +23,7 @@ chrome.runtime.onConnect.addListener((port) => {
 
 // Oasis sisteminin local storage'ındaki 'token' bilgisini almak için bir fonksiyon
 async function getTokenFromOasis(callback) {
-  // chrome.tabs.query({ url: 'https://oasis.arcelik.com/*' }, function (tabs) {
-  await chrome.tabs.query({ url: 'https://chat.openai.com/*' }, function (tabs) {
+  await chrome.tabs.query({ url: 'https://oasis.arcelik.com/*' }, function (tabs) {
     if (tabs.length > 0) {
       const tabId = tabs[0].id;
       // Oasis sayfasıyla iletişim kurup 'token' bilgisini al
