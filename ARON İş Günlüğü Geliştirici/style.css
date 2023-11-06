@@ -24,6 +24,10 @@
     #editPageAron select {
         border: none !important;
     }
+
+    .right {
+        display: none !important;
+    }
 }
 
 select {
@@ -265,4 +269,43 @@ table tr td select {
     margin-left: 13px;
     margin-top: 20px;
     padding: 3px;
+}
+
+
+.container {
+    display: flex;
+}
+
+.right {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow-x: hidden;
+}
+
+.left {
+    width: auto;
+}
+
+.right>table {
+    border-collapse: collapse;
+    width: 200px;
+    margin-right: 23%;
+    margin-left: auto;
+    white-space: nowrap;
+}
+
+.right>table th,
+.right>table td {
+    padding: 3px 5px;
+    border: 1px solid black;
+}
+
+.right>table>tbody>tr>td:last-child {
+    text-align: end;
+}
+
+.right>table>tbody>tr:last-child {
+    font-weight: 600;
 }

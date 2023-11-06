@@ -38,3 +38,10 @@
 
 - Material stock codes are now automatically fetched from the OASIS website and placed in the "Material" column.
 - Textarea fields now have an automatic vertical expansion feature. As you add lines, the textarea will automatically grow.
+
+
+## Version 1.4
+
+### New Features
+
+- A new feature has been added to track daily cash totals: "Total Cash Income" table. This table allows you to view the daily cash income for each technician.

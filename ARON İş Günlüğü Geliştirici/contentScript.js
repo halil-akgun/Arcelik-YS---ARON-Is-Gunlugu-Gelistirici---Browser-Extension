@@ -3,6 +3,10 @@ const body = document.querySelector("body");
 let table = document.querySelector("table");
 let rows = table?.querySelectorAll("tr");
 let oasisToken;
+let container = null;
+let left = null;
+let right = null;
+
 
 // Arka plan betiği ile iletişim kurmak için bir port oluştur
 const port = chrome.runtime.connect({ name: "oasis-get-token" });
@@ -46,9 +50,6 @@ window.addEventListener("load", editEditButton);
 
 function editPage() {
 
-    // Body'ye id ekle
-    body.id = "editPageAron";
-
     // Tabloyu body içinden kaldır
     document.body.removeChild(table);
 
@@ -66,10 +67,11 @@ function editPage() {
     const plateDropdownPlus = document.createElement("span");
     const plateDropdownMinus = document.createElement("span");
 
-    nameDropdown.title = "Teknisyenı veya Araç Seçiniz";
-    nameDropdownPlus.title = "Teknisyenı Ekle";
+    nameDropdown.title = "Teknisyenı Seçiniz";
+    nameDropdown.classList.add("current-technician");
     nameDropdownPlus.title = "Teknisyenı Ekle";
     nameDropdownMinus.title = "Teknisyenı Sil";
+    plateDropdown.title = "Araç Seçiniz";
     plateDropdownPlus.title = "Araç Ekle";
     plateDropdownMinus.title = "Araç Kaldır";
 
@@ -152,11 +154,27 @@ function editPage() {
     header.appendChild(fuel);
     header.appendChild(vehicle);
 
-    document.body.appendChild(header);
+    // Container oluştur
+    container = document.createElement("div");
+    left = document.createElement("div");
+    right = document.createElement("div");
+
+    container.classList.add("container");
+    left.id = "editPageAron";
+    left.classList.add("left");
+    right.classList.add("right");
+
+
+    left.appendChild(header);
 
 
     // Tabloyu tekrar ekle
-    document.body.appendChild(table);
+    left.appendChild(table);
+
+
+    container.appendChild(left);
+    container.appendChild(right);
+    document.body.appendChild(container);
 
 
     // Gereksiz sütunları kaldır
@@ -258,7 +276,7 @@ function editPage() {
     addRowButton.textContent = "Yeni Satır Ekle";
     addRowButton.classList.add("new-row-button", "print-hidden");
     addDivBottomTable.appendChild(addRowButton);
-    body.appendChild(addDivBottomTable);
+    left.appendChild(addDivBottomTable);
     addRowButton.addEventListener("click", createRow);
 
     // Genel toplam için div oluştur
@@ -311,7 +329,7 @@ function editPage() {
     totalTable.appendChild(totalAmountRow);
 
     totalDiv.appendChild(totalTable);
-    body.appendChild(totalDiv);
+    left.appendChild(totalDiv);
 
     addEventListenerForTotalAmount();
 
@@ -332,7 +350,7 @@ function editPage() {
     note.id = "note";
     note.classList.add("print-hidden");
     noteDiv.appendChild(note);
-    body.appendChild(noteDiv);
+    left.appendChild(noteDiv);
 
 
     updateTotalAmount(); // ilk açılışta genel toplamı 0 iken "0'larin" gözükmemesi için
@@ -361,7 +379,8 @@ function addEventListenerForTotalAmount() {
 
 function createRow() {
     table = document.querySelector("table");
-    rows = table.querySelectorAll("tr");
+    let tbody = document.querySelector("tbody");
+    rows = tbody.querySelectorAll("tr");
     const newRow = rows[rows.length - 2].cloneNode(true);
     const cells = newRow.querySelectorAll("td");
     const lastIndex = +cells[0].textContent;
@@ -379,7 +398,7 @@ function createRow() {
 
     cells[0].textContent = lastIndex + 2;
 
-    table.appendChild(newRow);
+    tbody.appendChild(newRow);
 
     table = document.querySelector("table");
     rows = table.querySelectorAll("tr");
@@ -425,6 +444,7 @@ function updateTotalAmount() {
                 ? (cashTotalAmount + creditTotalAmount + remittanceTotalAmount).toFixed(2) + " ₺" : "";
         }
     });
+    createTotalCashFromAllTechniciansTable(cashTotalAmount);
 }
 
 function formatNumber(input) {
@@ -561,4 +581,97 @@ function autoGrowTextarea() {
             this.classList.add("print-hidden");
         }
     }
+}
+
+
+function createTotalCashFromAllTechniciansTable(cashTotalAmount) {
+    const table = document.createElement("table");
+    table.id = "totalCash";
+    table.classList.add("print-hidden");
+    const tbody = document.createElement("tbody");
+    table.appendChild(tbody);
+    const th = document.createElement("th");
+    th.textContent = "Toplam Nakit Gelir";
+    th.setAttribute("colspan", "2");
+    tbody.appendChild(th);
+
+    const namesArray = getNamesFromLocalStorage();
+    const currentDate = new Date().toLocaleDateString();
+    let dailyCashData = JSON.parse(localStorage.getItem('dailyCash')) || {};
+
+    // Eğer "dailyCash" anahtarı yoksa veya tarih güncel değilse
+    if (!dailyCashData.date || dailyCashData.date !== currentDate) {
+
+        // Tarihi güncelle ve isimleri kontrol ederek ekle veya çıkar
+        dailyCashData.date = currentDate;
+        namesArray.forEach(name => {
+            dailyCashData[name] = 0;
+        });
+    } else {
+        namesArray.forEach(name => {
+            if (!(name in dailyCashData) && name !== ' ') {
+                // "name" anahtarı "dailyCash" içinde yoksa, ekleyin
+                dailyCashData[name] = 0.00;
+            }
+        });
+    }
+
+
+    // Nakit miktarını güncelle
+    const currentTechnicianDropdown = document.querySelector(".current-technician");
+    const currentTechnician = currentTechnicianDropdown.value;
+    dailyCashData[currentTechnician] = cashTotalAmount;
+
+
+    // Eksik isimleri kontrol ederek çıkar
+    for (const key in dailyCashData) {
+        if ((key !== "date" && !namesArray.includes(key)) || key === ' ') {
+            delete dailyCashData[key];
+        }
+    }
+
+
+    for (const key in dailyCashData) {
+        if (key !== "date") {
+            const row = document.createElement("tr");
+            tbody.appendChild(row);
+
+            const nameCell = document.createElement("td");
+            nameCell.textContent = key;
+            row.appendChild(nameCell);
+
+            const valueCell = document.createElement("td");
+            valueCell.textContent = dailyCashData[key].toFixed(2);
+            row.appendChild(valueCell);
+        }
+    }
+
+    // Genel toplam eklemesi
+    const totalRow = document.createElement("tr");
+    const totalNameCell = document.createElement("td");
+    totalNameCell.textContent = "Genel Toplam";
+    totalRow.appendChild(totalNameCell);
+
+    const totalValueCell = document.createElement("td");
+    const totalAmount = calculateTotalCash(dailyCashData);
+    totalValueCell.textContent = totalAmount;
+    totalRow.appendChild(totalValueCell);
+
+    tbody.appendChild(totalRow);
+
+
+    localStorage.setItem('dailyCash', JSON.stringify(dailyCashData));
+
+    right.innerHTML = "";
+    right.appendChild(table);
+}
+
+function calculateTotalCash(dailyCashData) {
+    let total = 0;
+    for (const key in dailyCashData) {
+        if (key !== "date") {
+            total += parseFloat(dailyCashData[key]);
+        }
+    }
+    return total.toFixed(2);
 }

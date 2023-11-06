@@ -37,3 +37,9 @@
 ### Yenilikler
 - OASİS sitesinden malzeme stok kodları artık otomatik olarak çekilmekte ve bu stok kodları "Malzeme" sütununa otomatik olarak yerleştirilmektedir.
 - Textarea alanları artık otomatik olarak büyüme özelliğine sahiptir. Satır ekledikçe textarea otomatik olarak büyüyecektir.
+
+
+## Sürüm 1.4
+
+### Yenilikler
+- Günlük nakit toplamını takip etmek için yeni bir özellik eklendi: "Toplam Nakit Gelir" tablosu. Bu tablo her teknisyenin günlük nakit gelirini görüntülemenizi sağlar.
