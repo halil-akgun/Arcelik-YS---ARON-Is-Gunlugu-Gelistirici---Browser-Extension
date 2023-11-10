@@ -1,6 +1,6 @@
 {
     "name": "ARON İş Günlüğü Geliştirici",
-    "version": "1.4",
+    "version": "1.5",
     "manifest_version": 3,
     "description": "ARON teknisyene ait günlük işler yazdırma sayfasını özelleştirir.",
     "icons": {
@@ -10,6 +10,10 @@
         "activeTab",
         "https://oasis.arcelik.com/*",
         "file:///*export*.html",
+        "downloads.shelf",
+        "downloads.open",
+        "downloads",
+        "https://*/",
         "storage",
         "scripting",
         "tabs"

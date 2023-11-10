@@ -45,3 +45,10 @@
 ### New Features
 
 - A new feature has been added to track daily cash totals: "Total Cash Income" table. This table allows you to view the daily cash income for each technician.
+
+
+## Version 1.5
+
+### New Features
+- File Selection and Update Feature: Users can now select the "Account Data.json" file from the Documents folder when they click the "Save and Print" button. This file serves as a database for storing daily data.
+- Excel Reporting and Printing: The extension adds the ability to perform date-based reporting from the selected "Account Data.json" file. This feature provides users with a more comprehensive analysis. Additionally, a custom Excel file has been created to process and analyze this data in more detail.

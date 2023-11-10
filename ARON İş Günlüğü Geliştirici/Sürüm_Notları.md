@@ -43,3 +43,10 @@
 
 ### Yenilikler
 - Günlük nakit toplamını takip etmek için yeni bir özellik eklendi: "Toplam Nakit Gelir" tablosu. Bu tablo her teknisyenin günlük nakit gelirini görüntülemenizi sağlar.
+
+
+## Sürüm 1.5
+
+### Yenilikler
+- Dosya Seçme ve Güncelleme Özelliği: Kullanıcılar artık "Kaydet ve Yazdır" butonuna bastıklarında Documents klasöründen "Hesap Verileri.json" dosyasını seçebilirler. Bu dosya, günlük verilerin depolandığı bir veritabanıdır.
+- Excel Raporlama ve Yazdırma: Eklenti, seçilen "Hesap Verileri.json" dosyası üzerinden tarih bazlı raporlama yapabilme yeteneği ekler. Bu özellik, kullanıcılara daha kapsamlı bir analiz imkanı sunar. Ayrıca, bu verilerin daha detaylı bir şekilde işlenebilmesi ve analiz edilebilmesi için özel bir Excel dosyası oluşturulmuştur.

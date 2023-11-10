@@ -2,6 +2,7 @@ const editButton = document.createElement("button");
 const body = document.querySelector("body");
 let table = document.querySelector("table");
 let rows = table?.querySelectorAll("tr");
+let printPermission = false;
 let oasisToken;
 let container = null;
 let left = null;
@@ -130,6 +131,7 @@ function editPage() {
 
     const dateInput = document.createElement("input");
     dateInput.type = "date";
+    dateInput.id = "date-input";
     // Varsayılan olarak bugünün tarihini alın
     const today = new Date();
     const year = today.getFullYear();
@@ -288,19 +290,33 @@ function editPage() {
     const totalCashRow = document.createElement("tr");
     const totalCashCell = document.createElement("td");
     const totalCashCellAmount = document.createElement("td");
+    totalCashCellAmount.id = "totalCashCellAmount";
     totalCashCell.textContent = "Nakit Toplam:";
-    const cashTotalAmount = calculateTotalAmount('N');
+    const cashTotalAmount = calculateTotalAmount('N', 'income')[0];
     totalCashCellAmount.textContent = cashTotalAmount.toFixed(2);
     totalCashRow.appendChild(totalCashCell);
     totalCashRow.appendChild(totalCashCellAmount);
     totalTable.appendChild(totalCashRow);
 
+    // Gider toplamı hesapla ve ekle
+    const totalExpenseRow = document.createElement("tr");
+    const totalExpenseCell = document.createElement("td");
+    const totalExpenseCellAmount = document.createElement("td");
+    totalExpenseCellAmount.id = "totalExpenseCellAmount";
+    totalExpenseCell.textContent = "Gider Toplam:";
+    const expenseTotalAmount = calculateTotalAmount('N', 'expense')[0];
+    totalExpenseCellAmount.textContent = expenseTotalAmount.toFixed(2);
+    totalExpenseRow.appendChild(totalExpenseCell);
+    totalExpenseRow.appendChild(totalExpenseCellAmount);
+    totalTable.appendChild(totalExpenseRow);
+
     // Kredi kartı toplamı hesapla ve ekle
     const totalCreditRow = document.createElement("tr");
     const totalCreditCell = document.createElement("td");
     const totalCreditCellAmount = document.createElement("td");
+    totalCreditCellAmount.id = "totalCreditCellAmount";
     totalCreditCell.textContent = "K.K. Toplam:";
-    const creditTotalAmount = calculateTotalAmount('K');
+    const creditTotalAmount = calculateTotalAmount('K')[0];
     totalCreditCellAmount.textContent = creditTotalAmount.toFixed(2);
     totalCreditRow.appendChild(totalCreditCell);
     totalCreditRow.appendChild(totalCreditCellAmount);
@@ -310,8 +326,9 @@ function editPage() {
     const totalRemittanceRow = document.createElement("tr");
     const totalRemittanceCell = document.createElement("td");
     const totalRemittanceCellAmount = document.createElement("td");
+    totalRemittanceCellAmount.id = "totalRemittanceCellAmount";
     totalRemittanceCell.textContent = "Havale Toplam:";
-    const remittanceTotalAmount = calculateTotalAmount('H');
+    const remittanceTotalAmount = calculateTotalAmount('H')[0];
     totalRemittanceCellAmount.textContent = remittanceTotalAmount.toFixed(2);
     totalRemittanceRow.appendChild(totalRemittanceCell);
     totalRemittanceRow.appendChild(totalRemittanceCellAmount);
@@ -322,13 +339,30 @@ function editPage() {
     const totalAmountCell = document.createElement("td");
     const totalAmountCellAmount = document.createElement("td");
     totalAmountCell.textContent = "Genel Toplam:";
-    const totalAmount = calculateTotalAmount();
+    const totalAmount = calculateTotalAmount()[0];
     totalAmountCellAmount.textContent = totalAmount.toFixed(2);
     totalAmountRow.appendChild(totalAmountCell);
     totalAmountRow.appendChild(totalAmountCellAmount);
     totalTable.appendChild(totalAmountRow);
 
-    totalDiv.appendChild(totalTable);
+    // Bakiye toplamı hesapla ve ekle
+    const balanceDiv = document.createElement("div");
+    const balanceTable = document.createElement("table");
+    balanceTable.id = "balance";
+    const balanceRow = document.createElement("tr");
+    const balanceCell = document.createElement("td");
+    const balanceCellAmount = document.createElement("td");
+    balanceCell.textContent = "Bakiye:";
+    balanceRow.appendChild(balanceCell);
+    balanceRow.appendChild(balanceCellAmount);
+    balanceTable.appendChild(balanceRow);
+    balanceDiv.appendChild(balanceTable);
+
+    const div = document.createElement("div");
+    div.appendChild(totalTable);
+    div.appendChild(balanceDiv);
+
+    totalDiv.appendChild(div);
     left.appendChild(totalDiv);
 
     addEventListenerForTotalAmount();
@@ -351,6 +385,21 @@ function editPage() {
     note.classList.add("print-hidden");
     noteDiv.appendChild(note);
     left.appendChild(noteDiv);
+
+
+    // Kullanıcıya yazdırma izni yoksa yazdırma işlemi iptal edilir.
+    window.addEventListener('beforeprint', function (event) {
+        if (!printPermission) {
+            let answer = this.confirm("!!! Veriler kaydedilmedi. Devam etmek istiyor musunuz?");
+            console.log(answer);
+            console.log(event);
+            if (!answer) {
+                this.document.getElementsByTagName("body")[0].classList.add("print-hidden");
+            } else {
+                this.document.getElementsByTagName("body")[0].classList.remove("print-hidden");
+            }
+        }
+    });
 
 
     updateTotalAmount(); // ilk açılışta genel toplamı 0 iken "0'larin" gözükmemesi için
@@ -407,8 +456,10 @@ function createRow() {
     addEventListenerForTotalAmount();
 }
 
-function calculateTotalAmount(paymentType) {
-    let total = 0;
+function calculateTotalAmount(paymentType, type) {
+    let isEmptyPriceColumn = true;
+    let totalIncome = 0;
+    let totalExpense = 0;
     rows.forEach((row) => {
         const inputs = row.querySelectorAll("td:nth-child(10) input[type='number']");
         const select = row.querySelector("td:nth-child(11) select");
@@ -416,35 +467,57 @@ function calculateTotalAmount(paymentType) {
         if (select && inputs.length > 0 && select.value === paymentType) {
             const inputValue = parseFloat(inputs[0].value);
             if (!isNaN(inputValue)) {
-                total += inputValue;
+                if (type === 'expense' && inputValue < 0) {
+                    totalExpense += inputValue;
+                } else if (type === 'income' && inputValue > 0) {
+                    totalIncome += inputValue;
+                } else if (type !== 'expense' && type !== 'income') {
+                    totalIncome += inputValue;
+                }
+                isEmptyPriceColumn = false;
             }
         }
     });
-    return total;
+    if (type === 'expense') {
+        return [totalExpense, isEmptyPriceColumn];
+    } else {
+        return [totalIncome, isEmptyPriceColumn];
+    }
 }
 
 // Toplam tutarı güncelleyen fonksiyon
 function updateTotalAmount() {
-    const cashTotalAmount = calculateTotalAmount('N');
+    const cashTotalAmount = calculateTotalAmount('N', 'income');
+    const expenseTotalAmount = calculateTotalAmount('N', 'expense');
     const creditTotalAmount = calculateTotalAmount('K');
     const remittanceTotalAmount = calculateTotalAmount('H');
+    const isEmptyPriceColumn = cashTotalAmount[1] && expenseTotalAmount[1] && creditTotalAmount[1] && remittanceTotalAmount[1];
 
     const totalTable = document.querySelector("#totalDiv table");
     const totalCells = totalTable.querySelectorAll("td");
 
     totalCells.forEach((cell, index) => {
         if (index === 1) {
-            cell.textContent = (cashTotalAmount + creditTotalAmount + remittanceTotalAmount) ? cashTotalAmount.toFixed(2) + " ₺" : "";
+            cell.textContent = (cashTotalAmount[0] + expenseTotalAmount[0] + creditTotalAmount[0] + remittanceTotalAmount[0]) || !isEmptyPriceColumn ? cashTotalAmount[0].toFixed(2) + " ₺" : "";
         } else if (index === 3) {
-            cell.textContent = (cashTotalAmount + creditTotalAmount + remittanceTotalAmount) ? creditTotalAmount.toFixed(2) + " ₺" : "";
+            cell.textContent = (cashTotalAmount[0] + expenseTotalAmount[0] + creditTotalAmount[0] + remittanceTotalAmount[0]) || !isEmptyPriceColumn ? expenseTotalAmount[0].toFixed(2) + " ₺" : "";
         } else if (index === 5) {
-            cell.textContent = (cashTotalAmount + creditTotalAmount + remittanceTotalAmount) ? remittanceTotalAmount.toFixed(2) + " ₺" : "";
+            cell.textContent = (cashTotalAmount[0] + expenseTotalAmount[0] + creditTotalAmount[0] + remittanceTotalAmount[0]) || !isEmptyPriceColumn ? creditTotalAmount[0].toFixed(2) + " ₺" : "";
         } else if (index === 7) {
-            cell.textContent = (cashTotalAmount + creditTotalAmount + remittanceTotalAmount)
-                ? (cashTotalAmount + creditTotalAmount + remittanceTotalAmount).toFixed(2) + " ₺" : "";
+            cell.textContent = (cashTotalAmount[0] + expenseTotalAmount[0] + creditTotalAmount[0] + remittanceTotalAmount[0]) || !isEmptyPriceColumn ? remittanceTotalAmount[0].toFixed(2) + " ₺" : "";
+        } else if (index === 9) {
+            cell.textContent = (cashTotalAmount[0] + expenseTotalAmount[0] + creditTotalAmount[0] + remittanceTotalAmount[0]) || !isEmptyPriceColumn
+                ? (cashTotalAmount[0] + expenseTotalAmount[0] + creditTotalAmount[0] + remittanceTotalAmount[0]).toFixed(2) + " ₺" : "";
+        } else if (index === 13) {
+            cell.textContent = (cashTotalAmount[0] + expenseTotalAmount[0] + creditTotalAmount[0] + remittanceTotalAmount[0]) || !isEmptyPriceColumn
+                ? (cashTotalAmount[0] + expenseTotalAmount[0]).toFixed(2) + " ₺" : "";
         }
     });
-    createTotalCashFromAllTechniciansTable(cashTotalAmount);
+
+    const balanceCell = document.querySelector("#balance td:nth-child(2)");
+    balanceCell.textContent = (cashTotalAmount[0] + expenseTotalAmount[0] + creditTotalAmount[0] + remittanceTotalAmount[0]) || !isEmptyPriceColumn ? (cashTotalAmount[0] + expenseTotalAmount[0]).toFixed(2) + " ₺" : "";
+
+    createTotalCashFromAllTechniciansTable(cashTotalAmount[0] + expenseTotalAmount[0]);
 }
 
 function formatNumber(input) {
@@ -596,16 +669,17 @@ function createTotalCashFromAllTechniciansTable(cashTotalAmount) {
     tbody.appendChild(th);
 
     const namesArray = getNamesFromLocalStorage();
-    const currentDate = new Date().toLocaleDateString();
+    const selectedDate = document.querySelector("#date-input").value;
+    const selectedName = document.querySelector(".current-technician").value;
     let dailyCashData = JSON.parse(localStorage.getItem('dailyCash')) || {};
 
     // Eğer "dailyCash" anahtarı yoksa veya tarih güncel değilse
-    if (!dailyCashData.date || dailyCashData.date !== currentDate) {
+    if (!dailyCashData.date || dailyCashData.date !== selectedDate) {
 
         // Tarihi güncelle ve isimleri kontrol ederek ekle veya çıkar
-        dailyCashData.date = currentDate;
+        dailyCashData.date = selectedDate;
         namesArray.forEach(name => {
-            dailyCashData[name] = 0;
+            dailyCashData[name] = 0.00;
         });
     } else {
         namesArray.forEach(name => {
@@ -663,7 +737,23 @@ function createTotalCashFromAllTechniciansTable(cashTotalAmount) {
     localStorage.setItem('dailyCash', JSON.stringify(dailyCashData));
 
     right.innerHTML = "";
-    right.appendChild(table);
+
+    const rightTop = document.createElement("div");
+    const rightBottom = document.createElement("div");
+
+    // Kaydet-Yazdır butonu ekle
+    const saveButton = document.createElement("button");
+    saveButton.id = "saveButton";
+    const text = document.createElement("span");
+    text.textContent = "Kaydet ve Yazdır";
+    saveButton.appendChild(text);
+    saveButton.classList.add("print-hidden");
+    saveButton.addEventListener("click", saveAndPrint);
+    rightTop.appendChild(saveButton);
+    rightBottom.appendChild(table);
+
+    right.appendChild(rightTop);
+    right.appendChild(rightBottom);
 }
 
 function calculateTotalCash(dailyCashData) {
@@ -674,4 +764,112 @@ function calculateTotalCash(dailyCashData) {
         }
     }
     return total.toFixed(2);
+}
+
+async function saveAndPrint() {
+
+    const date = document.querySelector("#date-input").value;
+    const name = document.querySelector(".current-technician").value;
+    const totalExpenseCellAmount = document.querySelector("#totalExpenseCellAmount").textContent;
+    const totalCashCellAmount = document.querySelector("#totalCashCellAmount").textContent;
+    const totalCreditCellAmount = document.querySelector("#totalCreditCellAmount").textContent;
+    const totalRemittanceCellAmount = document.querySelector("#totalRemittanceCellAmount").textContent;
+
+    const data = {
+        tarih: date,
+        isim: name,
+        gider: parseFloat(totalExpenseCellAmount) * -1,
+        nakit_gelir: parseFloat(totalCashCellAmount),
+        kart_gelir: parseFloat(totalCreditCellAmount),
+        havale_gelir: parseFloat(totalRemittanceCellAmount)
+    };
+
+    if (name === " ") {
+        window.alert("Lütfen teknisyen seçin.");
+        return;
+    }
+
+    try {
+        const isSaved = await updateDatabase(data);
+        if (isSaved) {
+            printPermission = true;
+            window.print();
+        }
+    } catch (error) {
+        console.log(error);
+        window.alert("Hata: Veri kaydedilemedi. Lütfen tekrar deneyin.");
+    }
+}
+
+async function updateDatabase(data) {
+    const pickerOpts = {
+        types: [
+            {
+                description: "Hesap Verileri.json",
+                accept: {
+                    "application/json": [".json"],
+                },
+            },
+        ],
+        startIn: "documents",
+        excludeAcceptAllOption: true,
+        multiple: false,
+    };
+
+    let database = null;
+    let fileHandle = null;
+    let fileContents = null;
+    let file = null;
+
+    async function getTheFile() {
+        try {
+            fileHandle = await window.showOpenFilePicker(pickerOpts);
+        } catch (error) {
+            console.log(error);
+            window.alert("Dosya seçilmedi. Lütfen dosya seçin.");
+            return false;
+        }
+        file = await fileHandle[0].getFile();
+        fileContents = await file.text();
+        if (fileContents.length !== 0) {
+            database = JSON.parse(fileContents);
+        }
+    }
+
+    await getTheFile();
+
+    if (!fileHandle || !fileHandle[0]) {
+        return false;
+    } else if (fileHandle[0].name !== "Hesap Verileri.json") {
+        window.alert("Yalnızca 'Hesap Verileri.json' dosyasını seçebilirsiniz.");
+        return false;
+    }
+
+
+    // Dosya içeriğini JSON'a çevir
+    let existingDataArray = [];
+    if (database) {
+        existingDataArray = JSON.parse(JSON.stringify(database));
+    }
+
+    for (const existingData of existingDataArray) {
+        if (existingData.tarih === data.tarih && existingData.isim === data.isim) {
+            // Eğer aynı tarih ve isim ile kayıt bulunursa, mevcut kaydı güncelle
+            Object.assign(existingData, data);
+            await writeFile(fileHandle[0], JSON.stringify(existingDataArray));
+            return true;
+        }
+    }
+
+    // Eğer aynı tarih ve isim ile kayıt bulunamazsa, yeni kaydı ekle
+    existingDataArray.push(data);
+    await writeFile(fileHandle[0], JSON.stringify(existingDataArray));
+
+    return true;
+}
+
+async function writeFile(fileHandle, content) {
+    const writable = await fileHandle.createWritable();
+    await writable.write(content);
+    await writable.close();
 }

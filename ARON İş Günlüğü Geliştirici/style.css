@@ -258,8 +258,12 @@ table tr td select {
     font-size: 13px;
 }
 
-#totalDiv tr:last-child {
+#totalDiv>div>table tr:last-child {
     background-color: #d3d2d2;
+}
+
+#balance {
+    margin-top: 23px;
 }
 
 
@@ -288,7 +292,17 @@ table tr td select {
     width: auto;
 }
 
-.right>table {
+.right div:first-child {
+    margin-left: 9px;
+    height: 30%;
+}
+
+.right div:last-child {
+    margin-left: 9px;
+    height: 100%;
+}
+
+.right>div>table {
     border-collapse: collapse;
     width: 200px;
     margin-right: 23%;
@@ -296,16 +310,72 @@ table tr td select {
     white-space: nowrap;
 }
 
-.right>table th,
-.right>table td {
+.right>div>table th,
+.right>div>table td {
     padding: 3px 5px;
     border: 1px solid black;
 }
 
-.right>table>tbody>tr>td:last-child {
+.right>div>table>tbody>tr>td:last-child {
     text-align: end;
 }
 
-.right>table>tbody>tr:last-child {
+.right>div>table>tbody>tr:last-child {
     font-weight: 600;
+}
+
+#saveButton {
+    display: flex;
+    /* background-color: #4CAF50; */
+    margin-top: 27px;
+    margin-right: 23%;
+    margin-left: auto;
+    white-space: nowrap;
+    align-items: center;
+    background-image: linear-gradient(144deg, #AF40FF, #5B42F3 50%, #00DDEB);
+    border: 0;
+    border-radius: 8px;
+    box-shadow: rgba(151, 65, 252, 0.2) 0 15px 30px -5px;
+    box-sizing: border-box;
+    color: #FFFFFF;
+    display: flex;
+    font-family: Phantomsans, sans-serif;
+    font-size: 20px;
+    justify-content: center;
+    line-height: 1em;
+    max-width: 100%;
+    min-width: 140px;
+    padding: 3px;
+    text-decoration: none;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    white-space: nowrap;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+#saveButton:active,
+#saveButton:hover {
+    outline: 0;
+}
+
+#saveButton span {
+    background-color: rgb(5, 6, 45);
+    padding: 11px 16px;
+    border-radius: 6px;
+    width: 100%;
+    height: 100%;
+    transition: 300ms;
+}
+
+#saveButton:hover span {
+    background: none;
+}
+
+@media (min-width: 768px) {
+    #saveButton {
+        font-size: 24px;
+        min-width: 196px;
+    }
 }
