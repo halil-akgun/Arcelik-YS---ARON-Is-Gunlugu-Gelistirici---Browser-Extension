@@ -7,6 +7,8 @@ let oasisToken;
 let container = null;
 let left = null;
 let right = null;
+const rightTop = document.createElement("div");
+const rightBottom = document.createElement("div");
 
 
 // Arka plan betiği ile iletişim kurmak için bir port oluştur
@@ -125,9 +127,13 @@ function editPage() {
     fuel.textContent = "Yakıt: ";
     vehicle.textContent = "Araç: ";
     nameDropdownPlus.textContent = "➕";
+    nameDropdownPlus.classList.add("plus");
     nameDropdownMinus.textContent = "➖";
+    nameDropdownMinus.classList.add("minus");
     plateDropdownPlus.textContent = "➕";
+    plateDropdownPlus.classList.add("plus");
     plateDropdownMinus.textContent = "➖";
+    plateDropdownMinus.classList.add("minus");
 
     const dateInput = document.createElement("input");
     dateInput.type = "date";
@@ -172,6 +178,7 @@ function editPage() {
 
     // Tabloyu tekrar ekle
     left.appendChild(table);
+    table.id = "data-table";
 
 
     container.appendChild(left);
@@ -194,6 +201,7 @@ function editPage() {
         const tds = row.querySelectorAll("td");
         if (tds.length >= 7) {
             let newTds = [];
+            newTds.push(document.createElement("td")); // sil butonu icin
             newTds.push(tds[0]);
             newTds.push(tds[6]);
             newTds.push(tds[5]);
@@ -219,41 +227,41 @@ function editPage() {
     });
 
     // Başlıkları düzelt
-    rows[0].querySelectorAll("td")[0].textContent = "#";
-    rows[0].querySelectorAll("td")[1].textContent = "Müşteri";
-    rows[0].querySelectorAll("td")[2].textContent = "Mahalle";
-    rows[0].querySelectorAll("td")[3].textContent = "Saat";
-    rows[0].querySelectorAll("td")[4].textContent = "Başvuru Nedeni";
-    rows[0].querySelectorAll("td")[5].textContent = "Fiş Durumu";
-    rows[0].querySelectorAll("td")[6].textContent = "Malzeme";
-    rows[0].querySelectorAll("td")[7].textContent = "Fiş No";
-    rows[0].querySelectorAll("td")[8].textContent = "Açıklama";
-    rows[0].querySelectorAll("td")[9].textContent = "Ücret";
-    rows[0].querySelectorAll("td")[10].textContent = "";
+    rows[0].querySelectorAll("td")[1].textContent = "#";
+    rows[0].querySelectorAll("td")[2].textContent = "Müşteri";
+    rows[0].querySelectorAll("td")[3].textContent = "Mahalle";
+    rows[0].querySelectorAll("td")[4].textContent = "Saat";
+    rows[0].querySelectorAll("td")[5].textContent = "Başvuru Nedeni";
+    rows[0].querySelectorAll("td")[6].textContent = "Fiş Durumu";
+    rows[0].querySelectorAll("td")[7].textContent = "Malzeme";
+    rows[0].querySelectorAll("td")[8].textContent = "Fiş No";
+    rows[0].querySelectorAll("td")[9].textContent = "Açıklama";
+    rows[0].querySelectorAll("td")[10].textContent = "Ücret";
+    rows[0].querySelectorAll("td")[11].textContent = "";
 
 
-    // Input ekle
+    // Input ve sil butonu ekle
     const dataRows = [...rows].slice(1); // İlk satır (başlık satırı) dışındaki tüm satırları seç
 
     dataRows.forEach((row) => {
         const tds = row.querySelectorAll("td");
-        if (tds.length >= 11) {
-            const seventhCell = tds[6];
-            const ninthCell = tds[8];
-            const tenthCell = tds[9];
+        if (tds.length >= 12) {
+            const eightthCell = tds[7];
+            const ninthCell = tds[9];
             const eleventhCell = tds[10];
+            const twelfthCell = tds[11];
 
-            // 7. hücreye input ekle
-            createInputCell(seventhCell);
-
-            // 9. hücreye input ekle
-            createInputCell(ninthCell);
+            // 8. hücreye input ekle
+            createInputCell(eightthCell);
 
             // 10. hücreye input ekle
-            const tenthInput = document.createElement("input");
-            tenthInput.type = "number";
+            createInputCell(ninthCell);
 
-            tenthCell.appendChild(tenthInput);
+            // 11. hücreye input ekle
+            const eleventhInput = document.createElement("input");
+            eleventhInput.type = "number";
+
+            eleventhCell.appendChild(eleventhInput);
 
             // 11. hücreye dropdown (seçim kutusu) ekle
             const paymentMethodSelect = document.createElement("select");
@@ -266,8 +274,10 @@ function editPage() {
                 option.textContent = optionText;
                 paymentMethodSelect.appendChild(option);
             });
+            twelfthCell.appendChild(paymentMethodSelect);
 
-            eleventhCell.appendChild(paymentMethodSelect);
+            // 1. hücreye sil butonu ekle
+            addDeleteButton(tds[0], row);
         }
     });
 
@@ -368,7 +378,7 @@ function editPage() {
     addEventListenerForTotalAmount();
 
     // Ücret inputlarını seç
-    const tenthCellInputs = document.querySelectorAll("td:nth-child(10) input");
+    const tenthCellInputs = document.querySelectorAll("td:nth-child(11) input");
     // Her bir ücret input öğesi için blur olayını dinleyen bir dinleyici ekleyin
     tenthCellInputs.forEach((input) => {
         input.addEventListener("blur", function () {
@@ -391,8 +401,6 @@ function editPage() {
     window.addEventListener('beforeprint', function (event) {
         if (!printPermission) {
             let answer = this.confirm("!!! Veriler kaydedilmedi. Devam etmek istiyor musunuz?");
-            console.log(answer);
-            console.log(event);
             if (!answer) {
                 this.document.getElementsByTagName("body")[0].classList.add("print-hidden");
             } else {
@@ -402,6 +410,17 @@ function editPage() {
     });
 
 
+    // Kaydet-Yazdır butonu ekle
+    const saveButton = document.createElement("button");
+    saveButton.id = "saveButton";
+    const text = document.createElement("span");
+    text.textContent = "Kaydet ve Yazdır";
+    saveButton.appendChild(text);
+    saveButton.classList.add("print-hidden");
+    saveButton.addEventListener("click", saveAndPrint);
+    rightTop.appendChild(saveButton);
+    right.appendChild(rightTop);
+
     updateTotalAmount(); // ilk açılışta genel toplamı 0 iken "0'larin" gözükmemesi için
 
     document.body.removeChild(editButton);
@@ -410,14 +429,15 @@ function editPage() {
 
     fillDescriptionWithNakliyeMontaj();
     fillMaterialColumn();
+    createTotalCashFromAllTechniciansTable();
 }
 
 function addEventListenerForTotalAmount() {
-    // 9. ve 10. hücrelerdeki inputları seç
-    const tenthCellInputs = document.querySelectorAll("td:nth-child(10) input");
-    const eleventhCellSelects = document.querySelectorAll("td:nth-child(11) select");
+    // 10. ve 11. hücrelerdeki inputları seç
+    const tenthCellInputs = document.querySelectorAll("td:nth-child(11) input");
+    const eleventhCellSelects = document.querySelectorAll("td:nth-child(12) select");
 
-    // 9. ve 10. hücrelerdeki inputlara event listener ekle
+    // 10. ve 11. hücrelerdeki inputlara event listener ekle
     tenthCellInputs.forEach((input) => {
         input.addEventListener("input", updateTotalAmount);
     });
@@ -432,20 +452,22 @@ function createRow() {
     rows = tbody.querySelectorAll("tr");
     const newRow = rows[rows.length - 2].cloneNode(true);
     const cells = newRow.querySelectorAll("td");
-    const lastIndex = +cells[0].textContent;
+    const lastIndex = +cells[1].textContent;
 
     cells.forEach((cell, index) => {
-        if (index !== 0 && index !== 9 && index !== 10) {
+        if (index !== 0 && index !== 1 && index !== 10 && index !== 11) {
             cell.textContent = "";
             createInputCell(cell)
-        } else if (index === 9) {
+        } else if (index === 10) {
             const input = cell.querySelector('input');
             input.value = "";
             input.addEventListener("blur", () => formatNumber(input));
         }
     });
 
-    cells[0].textContent = lastIndex + 2;
+    cells[1].textContent = lastIndex + 2;
+    cells[0].textContent = "";
+    addDeleteButton(cells[0], newRow);
 
     tbody.appendChild(newRow);
 
@@ -461,8 +483,8 @@ function calculateTotalAmount(paymentType, type) {
     let totalIncome = 0;
     let totalExpense = 0;
     rows.forEach((row) => {
-        const inputs = row.querySelectorAll("td:nth-child(10) input[type='number']");
-        const select = row.querySelector("td:nth-child(11) select");
+        const inputs = row.querySelectorAll("td:nth-child(11) input[type='number']");
+        const select = row.querySelector("td:nth-child(12) select");
 
         if (select && inputs.length > 0 && select.value === paymentType) {
             const inputValue = parseFloat(inputs[0].value);
@@ -493,7 +515,7 @@ function updateTotalAmount() {
     const remittanceTotalAmount = calculateTotalAmount('H');
     const isEmptyPriceColumn = cashTotalAmount[1] && expenseTotalAmount[1] && creditTotalAmount[1] && remittanceTotalAmount[1];
 
-    const totalTable = document.querySelector("#totalDiv table");
+    const totalTable = document.querySelector("#totalDiv>div>table");
     const totalCells = totalTable.querySelectorAll("td");
 
     totalCells.forEach((cell, index) => {
@@ -586,9 +608,9 @@ function fillDescriptionWithNakliyeMontaj() {
 
     dataRows.forEach((row) => {
         const tds = row.querySelectorAll("td");
-        if (tds.length >= 7) {
-            const reason = tds[4].textContent.trim();
-            const descriptionCell = tds[8].querySelector("textarea");
+        if (tds.length >= 8) {
+            const reason = tds[5].textContent.trim();
+            const descriptionCell = tds[9].querySelector("textarea");
 
             if (reason.toLowerCase().includes("nakliye montaj")) {
                 descriptionCell.value = "Nakliye Montaj";
@@ -608,7 +630,7 @@ function fillMaterialColumn() {
 
     dataRows.forEach((row) => {
         const tds = row.querySelectorAll("td");
-        const receiptNo = tds[7].textContent.trim();
+        const receiptNo = tds[8].textContent.trim();
         const oasisUrl = `https://ysdepo-pilot.arcelik.com/YsDepoYonetimiApi/api/DepoYonetimi/MaterialSearchDetail/${receiptNo}/FisNo/6058`;
         let headers = new Headers();
         headers.append("Authorization", `Bearer ${oasisToken}`);
@@ -620,7 +642,7 @@ function fillMaterialColumn() {
             .then((response) => response.json())
             .then((data) => {
                 if (data) {
-                    const materialCell = tds[6].querySelector("textarea");
+                    const materialCell = tds[7].querySelector("textarea");
                     let materials = "";
                     data.forEach((material, index) => {
                         materials += material.MALZEME_STOK_NO;
@@ -656,8 +678,7 @@ function autoGrowTextarea() {
     }
 }
 
-
-function createTotalCashFromAllTechniciansTable(cashTotalAmount) {
+function createTotalCashFromAllTechniciansTable(cashTotalAmount, isOffice) {
     const table = document.createElement("table");
     table.id = "totalCash";
     table.classList.add("print-hidden");
@@ -669,15 +690,15 @@ function createTotalCashFromAllTechniciansTable(cashTotalAmount) {
     tbody.appendChild(th);
 
     const namesArray = getNamesFromLocalStorage();
-    const selectedDate = document.querySelector("#date-input").value;
-    const selectedName = document.querySelector(".current-technician").value;
+    const today = new Date().toISOString().slice(0, 10);
     let dailyCashData = JSON.parse(localStorage.getItem('dailyCash')) || {};
 
     // Eğer "dailyCash" anahtarı yoksa veya tarih güncel değilse
-    if (!dailyCashData.date || dailyCashData.date !== selectedDate) {
+    if (!dailyCashData.date || dailyCashData.date !== today) {
 
         // Tarihi güncelle ve isimleri kontrol ederek ekle veya çıkar
-        dailyCashData.date = selectedDate;
+        dailyCashData.date = today;
+        dailyCashData.office = 0.00;
         namesArray.forEach(name => {
             dailyCashData[name] = 0.00;
         });
@@ -688,25 +709,52 @@ function createTotalCashFromAllTechniciansTable(cashTotalAmount) {
                 dailyCashData[name] = 0.00;
             }
         });
+        if (!('office' in dailyCashData)) {
+            dailyCashData['office'] = 0.00;
+        }
     }
-
 
     // Nakit miktarını güncelle
     const currentTechnicianDropdown = document.querySelector(".current-technician");
     const currentTechnician = currentTechnicianDropdown.value;
-    dailyCashData[currentTechnician] = cashTotalAmount;
+    if (isOffice) {
+        dailyCashData['office'] = cashTotalAmount;
+    } else {
+        dailyCashData[currentTechnician] = cashTotalAmount;
+    }
 
-
-    // Eksik isimleri kontrol ederek çıkar
+    // Listede olmayan isimleri kontrol ederek çıkar
     for (const key in dailyCashData) {
-        if ((key !== "date" && !namesArray.includes(key)) || key === ' ') {
+        if ((key !== "date" && key !== "office" && !namesArray.includes(key)) || key === ' ') {
             delete dailyCashData[key];
         }
     }
 
+    // Büro satırı eklemesi
+    const officeRow = document.createElement("tr");
+    tbody.appendChild(officeRow);
 
+    const officeCell = document.createElement("td");
+    officeCell.textContent = "Büro";
+    officeRow.appendChild(officeCell);
+
+    const officeAmountCell = document.createElement("td");
+    officeAmountCell.id = "officeAmount";
+    const input = document.createElement("input");
+    input.type = "number";
+    input.value = dailyCashData['office'].toFixed(2);
+    officeAmountCell.appendChild(input);
+    officeRow.appendChild(officeAmountCell);
+
+    // Input'a event listener ekle
+    input.addEventListener('blur', function (event) {
+        createTotalCashFromAllTechniciansTable(+event.target.value, true);
+    });
+
+
+    // Teknisyenlerin eklenmesi
     for (const key in dailyCashData) {
-        if (key !== "date") {
+        if (key !== "date" && key !== "office") {
             const row = document.createElement("tr");
             tbody.appendChild(row);
 
@@ -736,23 +784,8 @@ function createTotalCashFromAllTechniciansTable(cashTotalAmount) {
 
     localStorage.setItem('dailyCash', JSON.stringify(dailyCashData));
 
-    right.innerHTML = "";
-
-    const rightTop = document.createElement("div");
-    const rightBottom = document.createElement("div");
-
-    // Kaydet-Yazdır butonu ekle
-    const saveButton = document.createElement("button");
-    saveButton.id = "saveButton";
-    const text = document.createElement("span");
-    text.textContent = "Kaydet ve Yazdır";
-    saveButton.appendChild(text);
-    saveButton.classList.add("print-hidden");
-    saveButton.addEventListener("click", saveAndPrint);
-    rightTop.appendChild(saveButton);
+    rightBottom.innerHTML = "";
     rightBottom.appendChild(table);
-
-    right.appendChild(rightTop);
     right.appendChild(rightBottom);
 }
 
@@ -872,4 +905,30 @@ async function writeFile(fileHandle, content) {
     const writable = await fileHandle.createWritable();
     await writable.write(content);
     await writable.close();
+}
+
+function updateRowNumbers() {
+    for (let i = 1; i < rows.length; i++) {
+        const cells = rows[i].getElementsByTagName('td');
+        cells[1].textContent = i;
+    }
+}
+
+function addDeleteButton(td, row) {
+    const deleteButtonSpan = document.createElement("span");
+    deleteButtonSpan.textContent = "⛔";
+    deleteButtonSpan.classList.add("delete-button");
+    deleteButtonSpan.classList.add("print-hidden");
+    deleteButtonSpan.title = "Satırı Sil";
+    td.appendChild(deleteButtonSpan);
+    deleteButtonSpan.addEventListener("click", () => {
+        let rowNumber = row.rowIndex;
+        let control = window.confirm(rowNumber + ". satırı silmek istediğinizden emin misiniz?");
+        if (control) {
+            row.remove();
+            rows = document.querySelectorAll("#data-table tbody tr");
+            updateRowNumbers();
+            updateTotalAmount();
+        }
+    });
 }

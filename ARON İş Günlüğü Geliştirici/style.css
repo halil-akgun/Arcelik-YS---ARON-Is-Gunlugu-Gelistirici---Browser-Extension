@@ -28,6 +28,23 @@
     .right {
         display: none !important;
     }
+
+    #data-table>tbody>tr>td:nth-child(1) {
+        display: none !important;
+    }
+
+    #editPageAron>div:nth-child(1),
+    #editPageAron .new-row-button,
+    #totalDiv,
+    #note {
+        margin-left: 13px !important;
+    }
+
+    #editPageAron>div:nth-child(1),
+    #totalDiv,
+    #note {
+        width: 750px !important;
+    }
 }
 
 select {
@@ -53,7 +70,7 @@ input[type="date"]::-webkit-clear-button {
 #editPageAron>div:nth-child(1) {
     box-sizing: border-box;
     width: 750px;
-    margin-left: 13px;
+    margin-left: 32px;
     margin-top: 30px;
     margin-bottom: 23px;
     display: flex;
@@ -86,18 +103,21 @@ input[type="date"]::-webkit-clear-button {
     width: 90px;
 }
 
-#editPageAron>div:nth-child(1)>span:nth-child(2)>span,
-#editPageAron>div:nth-child(1)>span:nth-child(4)>span {
+.plus,
+.minus {
     font-size: 12px;
     font-weight: bold;
-    margin-left: 2px;
-    color: rgb(62, 62, 131);
+    margin-left: 3px;
+}
+
+.minus {
+    margin-left: 1px;
 }
 
 #editPageAron>div:nth-child(1)>span:nth-child(2)>span:hover,
 #editPageAron>div:nth-child(1)>span:nth-child(4)>span:hover {
     cursor: pointer;
-    color: rgb(0, 0, 0);
+    color: rgb(70, 32, 32) !important;
 }
 
 
@@ -138,52 +158,60 @@ input[type="date"]::-webkit-clear-button {
     font-family: tahoma;
 }
 
-#editPageAron td:nth-child(1) {
+#data-table>tbody>tr>td:nth-child(1) {
+    width: 0px;
+    border-left: none;
+    border-bottom: none;
+    border-top: none;
+    background-color: white;
+}
+
+#editPageAron td:nth-child(2) {
     padding: 2px;
     width: 14px;
 }
 
-#editPageAron td:nth-child(2) {
+#editPageAron td:nth-child(3) {
     width: 30px;
 }
 
-#editPageAron td:nth-child(3) {
-    width: 65px;
-}
-
 #editPageAron td:nth-child(4) {
-    width: 25px;
+    width: 65px;
 }
 
 #editPageAron td:nth-child(5) {
-    width: 89px;
+    width: 25px;
 }
 
 #editPageAron td:nth-child(6) {
-    width: 65px;
+    width: 89px;
 }
 
 #editPageAron td:nth-child(7) {
-    width: 136px;
+    width: 65px;
 }
 
 #editPageAron td:nth-child(8) {
-    width: 51px;
+    width: 136px;
 }
 
 #editPageAron td:nth-child(9) {
-    width: 155px;
+    width: 51px;
 }
 
 #editPageAron td:nth-child(10) {
-    width: 63px;
+    width: 155px;
 }
 
 #editPageAron td:nth-child(11) {
+    width: 63px;
+}
+
+#editPageAron td:nth-child(12) {
     width: 23px;
 }
 
-#editPageAron td:nth-child(10)>input {
+#editPageAron td:nth-child(11)>input {
     width: 100%;
     height: 100%;
     font-size: 12px;
@@ -191,7 +219,7 @@ input[type="date"]::-webkit-clear-button {
     background: transparent;
 }
 
-#editPageAron td:nth-child(11)>select {
+#editPageAron td:nth-child(12)>select {
     width: 100%;
     height: 100%;
     text-align: center;
@@ -209,7 +237,7 @@ input[type="date"]::-webkit-clear-button {
 
 
 #editPageAron .new-row-button {
-    margin-left: 13px;
+    margin-left: 32px;
     margin-top: 7px;
 }
 
@@ -232,7 +260,7 @@ table tr td select {
 #totalDiv {
     margin-top: 23px;
     width: 750px;
-    margin-left: 13px;
+    margin-left: 32px;
     display: flex;
     justify-content: end;
 }
@@ -270,7 +298,7 @@ table tr td select {
 /* Not textarea */
 #note {
     width: 750px;
-    margin-left: 13px;
+    margin-left: 32px;
     margin-top: 20px;
     padding: 3px;
 }
@@ -304,15 +332,22 @@ table tr td select {
 
 .right>div>table {
     border-collapse: collapse;
-    width: 200px;
     margin-right: 23%;
     margin-left: auto;
     white-space: nowrap;
 }
 
+.right>div>table td:nth-child(1) {
+    width: 140px;
+}
+
+.right>div>table td:nth-child(2) {
+    min-width: 80px;
+}
+
 .right>div>table th,
 .right>div>table td {
-    padding: 3px 5px;
+    padding: 4px 7px;
     border: 1px solid black;
 }
 
@@ -378,4 +413,26 @@ table tr td select {
         font-size: 24px;
         min-width: 196px;
     }
+}
+
+
+.delete-button {
+    cursor: pointer;
+}
+
+/* silme butonuna göre ayarlamalar */
+#editPageAron>div:nth-child(1),
+#totalDiv,
+#note {
+    width: 731px;
+}
+
+#officeAmount {
+    padding: 0;
+}
+
+#officeAmount input {
+    width: 65px;
+    text-align: end;
+    height: 100% !important;
 }
