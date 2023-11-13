@@ -9,7 +9,7 @@ let left = null;
 let right = null;
 const rightTop = document.createElement("div");
 const rightBottom = document.createElement("div");
-
+let isEmptyPriceColumn = true;
 
 // Arka plan betiği ile iletişim kurmak için bir port oluştur
 const port = chrome.runtime.connect({ name: "oasis-get-token" });
@@ -107,17 +107,21 @@ function editPage() {
 
     plateDropdownPlus.addEventListener("click", () => {
         const newPlate = prompt("Yeni plaka girin:");
-        if (newPlate) {
-            plates.push(newPlate.trim());
+        const checkedPlate = formatPlateNumber(newPlate.trim());
+        if (checkedPlate) {
+            plates.push(checkedPlate);
             createDropdown(plateDropdown, plates);
             savePlatesToLocalStorage(plates);
+        } else {
+            alert("Girdiğiniz plakayı kontrol ediniz.");
         }
     });
 
     plateDropdownMinus.addEventListener("click", () => {
         const plate = prompt("Silmek istediğiniz plakayı girin:");
-        if (plate) {
-            deletePlateFromDropdownAndLocalStorage(plateDropdown, plates, plate.trim());
+        const checkedPlate = formatPlateNumber(plate.trim());
+        if (checkedPlate) {
+            deletePlateFromDropdownAndLocalStorage(plateDropdown, plates, checkedPlate);
         }
         plates = getPlatesFromLocalStorage();
     });
@@ -479,7 +483,7 @@ function createRow() {
 }
 
 function calculateTotalAmount(paymentType, type) {
-    let isEmptyPriceColumn = true;
+    isEmptyPriceColumn = true;
     let totalIncome = 0;
     let totalExpense = 0;
     rows.forEach((row) => {
@@ -513,7 +517,7 @@ function updateTotalAmount() {
     const expenseTotalAmount = calculateTotalAmount('N', 'expense');
     const creditTotalAmount = calculateTotalAmount('K');
     const remittanceTotalAmount = calculateTotalAmount('H');
-    const isEmptyPriceColumn = cashTotalAmount[1] && expenseTotalAmount[1] && creditTotalAmount[1] && remittanceTotalAmount[1];
+    isEmptyPriceColumn = cashTotalAmount[1] && expenseTotalAmount[1] && creditTotalAmount[1] && remittanceTotalAmount[1];
 
     const totalTable = document.querySelector("#totalDiv>div>table");
     const totalCells = totalTable.querySelectorAll("td");
@@ -539,7 +543,9 @@ function updateTotalAmount() {
     const balanceCell = document.querySelector("#balance td:nth-child(2)");
     balanceCell.textContent = (cashTotalAmount[0] + expenseTotalAmount[0] + creditTotalAmount[0] + remittanceTotalAmount[0]) || !isEmptyPriceColumn ? (cashTotalAmount[0] + expenseTotalAmount[0]).toFixed(2) + " ₺" : "";
 
-    createTotalCashFromAllTechniciansTable(cashTotalAmount[0] + expenseTotalAmount[0]);
+    if (!isEmptyPriceColumn) {
+        createTotalCashFromAllTechniciansTable(cashTotalAmount[0] + expenseTotalAmount[0]);
+    }
 }
 
 function formatNumber(input) {
@@ -565,8 +571,16 @@ function saveNamesToLocalStorage(names) {
 }
 
 function getPlatesFromLocalStorage() {
-    const namesJSON = localStorage.getItem("plates6091");
-    return namesJSON ? JSON.parse(namesJSON) : [" "];
+    const platesJSON = localStorage.getItem("plates6091");
+
+    if (platesJSON) {
+        const platesArray = JSON.parse(platesJSON);
+        const formattedPlates = platesArray.map((plate) => plate !== ' ' ? formatPlateNumber(plate) : plate);
+        savePlatesToLocalStorage(formattedPlates);
+        return formattedPlates;
+    } else {
+        return [" "];
+    }
 }
 
 function savePlatesToLocalStorage(plates) {
@@ -574,7 +588,7 @@ function savePlatesToLocalStorage(plates) {
 }
 
 function createDropdown(dropdown, values) {
-    values.sort(); // İsimleri sırala
+    values.sort((a, b) => a.localeCompare(b, 'tr')); // İsimleri sırala
     clearDropdown(dropdown); // Dropdown listesini temizle
     values.forEach((name) => {
         const option = document.createElement("option");
@@ -679,18 +693,27 @@ function autoGrowTextarea() {
 }
 
 function createTotalCashFromAllTechniciansTable(cashTotalAmount, isOffice) {
+
+    // Tarih kontrolu
+    const today = new Date().toISOString().slice(0, 10);
+    const selectedDate = document.getElementById("date-input").value;
+    if (selectedDate !== today) {
+        console.log(selectedDate);
+        console.log(today);
+        return;
+    }
+
     const table = document.createElement("table");
     table.id = "totalCash";
     table.classList.add("print-hidden");
     const tbody = document.createElement("tbody");
     table.appendChild(tbody);
     const th = document.createElement("th");
-    th.textContent = "Toplam Nakit Gelir";
+    th.textContent = "Toplam Nakit Gelir (bugün)";
     th.setAttribute("colspan", "2");
     tbody.appendChild(th);
 
     const namesArray = getNamesFromLocalStorage();
-    const today = new Date().toISOString().slice(0, 10);
     let dailyCashData = JSON.parse(localStorage.getItem('dailyCash')) || {};
 
     // Eğer "dailyCash" anahtarı yoksa veya tarih güncel değilse
@@ -698,19 +721,19 @@ function createTotalCashFromAllTechniciansTable(cashTotalAmount, isOffice) {
 
         // Tarihi güncelle ve isimleri kontrol ederek ekle veya çıkar
         dailyCashData.date = today;
-        dailyCashData.office = 0.00;
+        dailyCashData.office = null;
         namesArray.forEach(name => {
-            dailyCashData[name] = 0.00;
+            dailyCashData[name] = null;
         });
     } else {
         namesArray.forEach(name => {
             if (!(name in dailyCashData) && name !== ' ') {
                 // "name" anahtarı "dailyCash" içinde yoksa, ekleyin
-                dailyCashData[name] = 0.00;
+                dailyCashData[name] = null;
             }
         });
         if (!('office' in dailyCashData)) {
-            dailyCashData['office'] = 0.00;
+            dailyCashData['office'] = null;
         }
     }
 
@@ -742,7 +765,8 @@ function createTotalCashFromAllTechniciansTable(cashTotalAmount, isOffice) {
     officeAmountCell.id = "officeAmount";
     const input = document.createElement("input");
     input.type = "number";
-    input.value = dailyCashData['office'].toFixed(2);
+    const value = dailyCashData['office'];
+    input.value = value === null ? "" : value.toFixed(2);
     officeAmountCell.appendChild(input);
     officeRow.appendChild(officeAmountCell);
 
@@ -751,9 +775,11 @@ function createTotalCashFromAllTechniciansTable(cashTotalAmount, isOffice) {
         createTotalCashFromAllTechniciansTable(+event.target.value, true);
     });
 
+    // dailyCashData'nın keylerini bir diziye çıkart ve Türkçe karakterlere göre sırala
+    const keys = Object.keys(dailyCashData).sort((a, b) => a.localeCompare(b, 'tr'));
 
     // Teknisyenlerin eklenmesi
-    for (const key in dailyCashData) {
+    for (const key of keys) {
         if (key !== "date" && key !== "office") {
             const row = document.createElement("tr");
             tbody.appendChild(row);
@@ -763,7 +789,8 @@ function createTotalCashFromAllTechniciansTable(cashTotalAmount, isOffice) {
             row.appendChild(nameCell);
 
             const valueCell = document.createElement("td");
-            valueCell.textContent = dailyCashData[key].toFixed(2);
+            const value = dailyCashData[key];
+            valueCell.textContent = value === null ? '' : value.toFixed(2);
             row.appendChild(valueCell);
         }
     }
@@ -776,7 +803,7 @@ function createTotalCashFromAllTechniciansTable(cashTotalAmount, isOffice) {
 
     const totalValueCell = document.createElement("td");
     const totalAmount = calculateTotalCash(dailyCashData);
-    totalValueCell.textContent = totalAmount;
+    totalValueCell.textContent = +totalAmount === 0 && isEmptyPriceColumn ? "" : totalAmount;
     totalRow.appendChild(totalValueCell);
 
     tbody.appendChild(totalRow);
@@ -792,7 +819,7 @@ function createTotalCashFromAllTechniciansTable(cashTotalAmount, isOffice) {
 function calculateTotalCash(dailyCashData) {
     let total = 0;
     for (const key in dailyCashData) {
-        if (key !== "date") {
+        if (key !== "date" && dailyCashData[key] !== null) {
             total += parseFloat(dailyCashData[key]);
         }
     }
@@ -931,4 +958,16 @@ function addDeleteButton(td, row) {
             updateTotalAmount();
         }
     });
+}
+
+function formatPlateNumber(plate) {
+    const regex = /^(\d{1,2})\s*([A-Za-z]{1,3})\s*(\d{2,5})$/;
+    const match = plate.match(regex);
+    if (!match) {
+        return null;
+    }
+    const [, firstPart, secondPart, thirdPart] = match;
+    const formattedFirstPart = firstPart.padStart(2, '0');
+    const formattedSecondPart = secondPart.toUpperCase();
+    return `${formattedFirstPart} ${formattedSecondPart} ${thirdPart}`;
 }
