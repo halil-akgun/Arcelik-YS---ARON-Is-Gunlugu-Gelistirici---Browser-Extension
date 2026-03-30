@@ -1,7 +1,43 @@
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === 'saveTableData') {
+    chrome.storage.local.set({ tableData: message.data }, () => {
+      console.log('[ARON] storage\'a kaydedildi');
+      sendResponse({ success: true });
+    });
+    return true;
+  }
+
+  if (message.action === 'getTableData') {
+    chrome.storage.local.get(['tableData'], (result) => {
+      sendResponse({ data: result.tableData || [] });
+    });
+    return true;
+  }
+});
+
 // İçerik betiği ve arka plan betiği arasında kullanılacak bir port oluştur
 let contentPort = null;
 
-// İçerik betiği ile port aracılığıyla iletişim kurmak için bir dinleyici ekle
+// Extension icon tıklandığında çalışan fonksiyon
+chrome.action.onClicked.addListener((tab) => {
+  // aron.arcelik.com veya export*.html dosyalarında çalışsın
+  if (tab.url && (tab.url.includes('aron.arcelik.com') || /export.*\.html$/.test(tab.url))) {
+    // Content script'e runExtraction mesajı gönder
+    chrome.tabs.sendMessage(tab.id, { action: 'runExtraction' }, (response) => {
+      if (chrome.runtime.lastError) {
+        console.error('[ARON] Mesaj gönderme hatası:', chrome.runtime.lastError);
+      } else if (response && response.success) {
+        console.log('[ARON] Extraction tamamlandı, editor açılıyor');
+        // Extraction tamamlandıktan sonra editor.html aç
+        chrome.tabs.create({
+          url: chrome.runtime.getURL('editor.html')
+        });
+      }
+    });
+  }
+});
+
+// İçerik betiği ve arka plan betiği arasında kullanılacak bir port oluştur
 chrome.runtime.onConnect.addListener((port) => {
   if (port.name === "oasis-get-token") {
     contentPort = port;

@@ -5,7 +5,7 @@ ARON İş Günlüğü Geliştirici, Arcelik Yetkili Servis'in bir sistemi olan A
 
 ## Özellikler
 
-- Günlük hizmet raporları için ARON tarafından oluşturulan HTML sayfasını özelleştirir.
+- Günlük hizmet raporları için ARON web sitesinde bulunan teknisyenlerin "Günlük İş Listesi" sayfasını özelleştirir.
 - Hizmet kayıtlarını görüntülemek ve düzenlemek için daha kullanıcı dostu bir arayüz sunar.
 
 
@@ -17,10 +17,11 @@ ARON İş Günlüğü Geliştirici, Arcelik Yetkili Servis'in bir sistemi olan A
 
 ## Kullanım
 
-1. ARON'da bir teknisyen seçin.
-2. 'Çıktı Al'a tıklayın.
-3. Açılan sayfanın sağ-üst köşesindeki 'Düzenle' butonuna tıklayın.
-4. "Malzeme" sütununun otomatik doldurulmasını isterseniz, farklı bir sekmede OASIS sayfasının (giriş yapılmış olarak) açık olması gerekir.
+1. ARON web sitesinde raporunu almak istediğiniz teknisyenin "Günlük İş Listesi" sayfasını açın.
+2. Açılan yeni sekmede gerekli düzenlemeleri yapın.
+3. 'Kaydet ve Yazdır'a tıklayın.
+4. Verileri Excel’de kullanabilmek için Belgeler klasöründeki Hesap Verileri.json dosyasına kaydedin.
+5. "Malzeme" sütununun otomatik doldurulmasını isterseniz, farklı bir sekmede OASIS sayfasının (giriş yapılmış olarak) açık olması gerekir.
 
 
 ## Lisans

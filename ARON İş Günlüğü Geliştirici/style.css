@@ -47,6 +47,11 @@
     }
 }
 
+body {
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 15.6px;
+}
+
 select {
     appearance: none;
 }
@@ -374,7 +379,7 @@ table tr td select {
     box-sizing: border-box;
     color: #FFFFFF;
     display: flex;
-    font-family: Phantomsans, sans-serif;
+    font-family: Phantomsans, sans-serif !important;
     font-size: 20px;
     justify-content: center;
     line-height: 1em;
@@ -438,4 +443,11 @@ table tr td select {
     text-align: end;
     height: 100%;
     padding-right: 7px;
+    box-sizing: border-box;
+    border: none;
+    margin: 0;
+}
+
+#totalExpenseRow {
+    color: red;
 }

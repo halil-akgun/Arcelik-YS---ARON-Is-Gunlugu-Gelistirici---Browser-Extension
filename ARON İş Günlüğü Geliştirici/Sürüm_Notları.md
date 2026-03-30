@@ -55,3 +55,13 @@
 - Toplam Nakit Gelir tablosuna yeni bir satır eklenmiştir: "Büro". Artık bu satıra girilen değer, büro nakit geliri olarak kaydedilebilir.
 - Her satıra, istenmeyen kayıtların kolayca kaldırılmasına olanak tanıyan bir silme düğmesi eklendi.
 - Girilen plakalar artık otomatik olarak belirli bir formata getirilmektedir. Bu, plakaların düzenli ve tutarlı olmasını sağlar.
+
+
+## Sürüm 2.0
+
+### Yenilikler
+- Yeni ARON sitesi mimarisini desteklemek için veri çekme mantığı güncellenmiştir. Veriler, güncellenmiş sistem yapısına uyum sağlamak için farklı şekilde çekilmektedir.
+- Geriye dönük uyumluluk korunmuştur: eklenti eski sistem ile sorunsuz bir şekilde çalışmaya devam etmektedir.
+- Zaman bazlı sıralama eklendi: çekilen veriler artık otomatik olarak sabahtan akşama doğru kronolojik olarak sıralanmaktadır. Aynı saate sahip kayıtlar, müşteri adına göre alfabetik olarak sıralanmaktadır.
+- Eklenti butonu entegrasyonu: eklenti butonu artık veri çekme işlemini doğrudan tetiklemekte, önceki "Düzenle" buton iş akışının yerini almıştır.
+- İyileştirilmiş veri görünürlüğü: `revealNames()` metodu, artık veri çekimi başlamadan önce gizli isimleri düzgün şekilde göstermektedir.

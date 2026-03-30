@@ -55,3 +55,13 @@
 - A new row, "Office" has been added to the Total Cash Income table. Values entered in this row will be recorded as office cash income.
 - A delete button has been added to each row, allowing easy removal of unwanted entries.
 - License plates are now automatically formatted to a specific pattern, ensuring consistency and uniformity.
+
+
+## Version 2.0
+
+### New Features
+- Updated data extraction logic to support the new ARON website architecture. Data is now extracted differently to accommodate the updated system structure.
+- Backward compatibility maintained: the extension continues to work seamlessly with the legacy system.
+- Added time-based sorting: extracted data is now automatically sorted chronologically from morning to evening. Records with the same time are additionally sorted alphabetically by customer name.
+- Extension button integration: the extension button now triggers the data extraction process directly, replacing the previous "Edit" button workflow.
+- Improved data visibility: the `revealNames()` method now properly displays hidden names before data extraction begins.

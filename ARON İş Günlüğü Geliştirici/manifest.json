@@ -1,6 +1,6 @@
 {
     "name": "ARON İş Günlüğü Geliştirici",
-    "version": "1.6",
+    "version": "2.0",
     "manifest_version": 3,
     "description": "ARON teknisyene ait günlük işler yazdırma sayfasını özelleştirir.",
     "icons": {
@@ -19,6 +19,7 @@
     ],
     "host_permissions": [
         "https://oasis.arcelik.com/*",
+        "https://aron.arcelik.com/*",
         "file:///*export*.html"
     ],
     "action": {
@@ -26,7 +27,7 @@
     },
     "content_scripts": [
         {
-            "matches": ["https://oasis.arcelik.com/*", "file:///*export*.html"],
+            "matches": ["https://oasis.arcelik.com/*", "https://aron.arcelik.com/*", "file:///*export*.html"],
             "js": ["contentScript.js"],
             "css": ["style.css"]
         }
