@@ -15,7 +15,7 @@ The ARON İş Günlüğü Geliştirici extension allows you to customize daily s
 
 <br>
 
-**Note:** You can use the `export.html` file to try the plugin.
+**Note:** You can use the `export.html` and `Aron Gunluk Is Listesi.html` files to try the extension.
 
 
 ## License

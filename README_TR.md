@@ -15,7 +15,7 @@ ARON İş Günlüğü Geliştirici eklentisi, ARON tarafından oluşturulan gün
 
 <br>
 
-**Not:** Eklentiyi denemek için `export.html` dosyasını kullanabilirsiniz.
+**Not:** Eklentiyi denemek için `export.html` ve `Aron Gunluk Is Listesi.html` dosyalarını kullanabilirsiniz.
 
 
 ## Lisans
