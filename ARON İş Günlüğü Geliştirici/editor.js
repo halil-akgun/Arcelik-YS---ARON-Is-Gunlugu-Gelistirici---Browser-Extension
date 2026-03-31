@@ -72,7 +72,7 @@ port.onMessage.addListener((message) => {
 
 
 
-function editPage() {
+async function editPage() {
 
     // Tabloyu body içinden kaldır
     if (table && table.parentNode) {
@@ -103,7 +103,7 @@ function editPage() {
 
 
     // İsimleri dropdown'a ekle
-    let names = getNamesFromLocalStorage();
+    let names = await getNamesFromLocalStorage();
     createDropdown(nameDropdown, names);
 
     nameDropdownPlus.addEventListener("click", () => {
@@ -115,17 +115,17 @@ function editPage() {
         }
     });
 
-    nameDropdownMinus.addEventListener("click", () => {
+    nameDropdownMinus.addEventListener("click", async () => {
         const name = prompt("Silmek istediğiniz ismi girin:");
         if (name) {
-            deleteNameFromDropdownAndLocalStorage(nameDropdown, names, name.trim());
+            await deleteNameFromDropdownAndLocalStorage(nameDropdown, names, name.trim());
+            names = await getNamesFromLocalStorage();
         }
-        names = getNamesFromLocalStorage();
     });
 
 
     // Plakaları dropdown'a ekle
-    let plates = getPlatesFromLocalStorage();
+    let plates = await getPlatesFromLocalStorage();
     createDropdown(plateDropdown, plates);
 
     plateDropdownPlus.addEventListener("click", () => {
@@ -140,13 +140,13 @@ function editPage() {
         }
     });
 
-    plateDropdownMinus.addEventListener("click", () => {
+    plateDropdownMinus.addEventListener("click", async () => {
         const plate = prompt("Silmek istediğiniz plakayı girin:");
         const checkedPlate = formatPlateNumber(plate.trim());
         if (checkedPlate) {
-            deletePlateFromDropdownAndLocalStorage(plateDropdown, plates, checkedPlate);
+            await deletePlateFromDropdownAndLocalStorage(plateDropdown, plates, checkedPlate);
+            plates = await getPlatesFromLocalStorage();
         }
-        plates = getPlatesFromLocalStorage();
     });
 
     date.textContent = "Tarih: ";
@@ -449,13 +449,13 @@ function editPage() {
     rightTop.appendChild(saveButton);
     right.appendChild(rightTop);
 
-    updateTotalAmount(); // ilk açılışta genel toplamı 0 iken "0'larin" gözükmemesi için
+    await updateTotalAmount(); // ilk açılışta genel toplamı 0 iken "0'larin" gözükmemesi için
 
     autoGrowTextarea();
 
     fillDescriptionWithNakliyeMontaj();
     fillMaterialColumn();
-    createTotalCashFromAllTechniciansTable();
+    await createTotalCashFromAllTechniciansTable();
 }
 
 function addEventListenerForTotalAmount() {
@@ -534,7 +534,7 @@ function calculateTotalAmount(paymentType, type) {
 }
 
 // Toplam tutarı güncelleyen fonksiyon
-function updateTotalAmount() {
+async function updateTotalAmount() {
     const cashTotalAmount = calculateTotalAmount('N', 'income');
     const expenseTotalAmount = calculateTotalAmount('N', 'expense');
     const creditTotalAmount = calculateTotalAmount('K');
@@ -566,7 +566,7 @@ function updateTotalAmount() {
     balanceCell.textContent = (cashTotalAmount[0] + expenseTotalAmount[0] + creditTotalAmount[0] + remittanceTotalAmount[0]) || !isEmptyPriceColumn ? (cashTotalAmount[0] + expenseTotalAmount[0]).toFixed(2) + " ₺" : "";
 
     if (!isEmptyPriceColumn) {
-        createTotalCashFromAllTechniciansTable(cashTotalAmount[0] + expenseTotalAmount[0]);
+        await createTotalCashFromAllTechniciansTable(cashTotalAmount[0] + expenseTotalAmount[0]);
     }
 }
 
@@ -584,29 +584,38 @@ function createInputCell(cell) {
 }
 
 function getNamesFromLocalStorage() {
-    const namesJSON = localStorage.getItem("names6091");
-    return namesJSON ? JSON.parse(namesJSON) : [" "];
+    // Eski localStorage yerine chrome.storage kullan
+    return new Promise((resolve) => {
+        chrome.storage.local.get(['names'], (result) => {
+            resolve(result.names || [" "]);
+        });
+    });
 }
 
-function saveNamesToLocalStorage(names) {
-    localStorage.setItem("names6091", JSON.stringify(names));
+async function saveNamesToLocalStorage(names) {
+    // Eski localStorage yerine chrome.storage kullan
+    chrome.storage.local.set({ names: names });
 }
 
 function getPlatesFromLocalStorage() {
-    const platesJSON = localStorage.getItem("plates6091");
-
-    if (platesJSON) {
-        const platesArray = JSON.parse(platesJSON);
-        const formattedPlates = platesArray.map((plate) => plate !== ' ' ? formatPlateNumber(plate) : plate);
-        savePlatesToLocalStorage(formattedPlates);
-        return formattedPlates;
-    } else {
-        return [" "];
-    }
+    // Eski localStorage yerine chrome.storage kullan
+    return new Promise((resolve) => {
+        chrome.storage.local.get(['plates'], (result) => {
+            const platesArray = result.plates;
+            if (platesArray) {
+                const formattedPlates = platesArray.map((plate) => plate !== ' ' ? formatPlateNumber(plate) : plate);
+                savePlatesToLocalStorage(formattedPlates);
+                resolve(formattedPlates);
+            } else {
+                resolve([" "]);
+            }
+        });
+    });
 }
 
-function savePlatesToLocalStorage(plates) {
-    localStorage.setItem("plates6091", JSON.stringify(plates));
+async function savePlatesToLocalStorage(plates) {
+    // Eski localStorage yerine chrome.storage kullan
+    chrome.storage.local.set({ plates: plates });
 }
 
 function createDropdown(dropdown, values) {
@@ -620,13 +629,13 @@ function createDropdown(dropdown, values) {
     });
 }
 
-function deleteNameFromDropdownAndLocalStorage(dropdown, names, deletedName) {
+async function deleteNameFromDropdownAndLocalStorage(dropdown, names, deletedName) {
     names = names.filter((item) => item.toLowerCase() !== deletedName.toLowerCase());
     createDropdown(dropdown, names);
     saveNamesToLocalStorage(names);
 }
 
-function deletePlateFromDropdownAndLocalStorage(dropdown, plates, deletedPlate) {
+async function deletePlateFromDropdownAndLocalStorage(dropdown, plates, deletedPlate) {
     plates = plates.filter((item) => item.toLowerCase() !== deletedPlate.toLowerCase());
     createDropdown(dropdown, plates);
     savePlatesToLocalStorage(plates);
@@ -714,7 +723,7 @@ function autoGrowTextarea() {
     }
 }
 
-function createTotalCashFromAllTechniciansTable(cashTotalAmount, isOffice) {
+async function createTotalCashFromAllTechniciansTable(cashTotalAmount, isOffice) {
 
     // Tarih kontrolu
     const today = new Date().toISOString().slice(0, 10);
@@ -735,7 +744,10 @@ function createTotalCashFromAllTechniciansTable(cashTotalAmount, isOffice) {
     th.setAttribute("colspan", "2");
     tbody.appendChild(th);
 
-    const namesArray = getNamesFromLocalStorage();
+    let namesArray = await getNamesFromLocalStorage();
+    if (!Array.isArray(namesArray)) {
+        namesArray = namesArray ? [namesArray] : [" "];
+    }
     let dailyCashData = JSON.parse(localStorage.getItem('dailyCash')) || {};
 
     // Eğer "dailyCash" anahtarı yoksa veya tarih güncel değilse
@@ -793,8 +805,8 @@ function createTotalCashFromAllTechniciansTable(cashTotalAmount, isOffice) {
     officeRow.appendChild(officeAmountCell);
 
     // Input'a event listener ekle
-    input.addEventListener('blur', function (event) {
-        createTotalCashFromAllTechniciansTable(+event.target.value, true);
+    input.addEventListener('blur', async function (event) {
+        await createTotalCashFromAllTechniciansTable(+event.target.value, true);
     });
 
     // dailyCashData'nın keylerini bir diziye çıkart ve Türkçe karakterlere göre sırala

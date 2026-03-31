@@ -13,6 +13,21 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     });
     return true;
   }
+
+  if (message.action === "migrateData") {
+    const data = message.data;
+    const storageData = {};
+
+    if (data.names) storageData.names = data.names;
+    if (data.plates) storageData.plates = data.plates;
+    if (data.dailyCash) storageData.dailyCash = data.dailyCash;
+
+    chrome.storage.local.set(storageData, () => {
+      console.log("[ARON] Migration done (from file://)");
+      sendResponse({ success: true });
+    });
+    return true;
+  }
 });
 
 // İçerik betiği ve arka plan betiği arasında kullanılacak bir port oluştur
