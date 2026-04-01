@@ -8,31 +8,30 @@
     },
     "permissions": [
         "activeTab",
-        "file:///*export*.html",
         "downloads.shelf",
         "downloads.open",
         "downloads",
-        "https://*/",
         "storage",
         "scripting",
         "tabs"
     ],
-    "host_permissions": [
-        "https://oasis.arcelik.com/*",
-        "https://aron.arcelik.com/*",
-        "file:///*export*.html"
-    ],
+    "host_permissions": ["<all_urls>", "file:///*"],
     "action": {
         "default_icon": "printer.png"
     },
     "content_scripts": [
         {
-            "matches": ["https://oasis.arcelik.com/*", "https://aron.arcelik.com/*", "file:///*export*.html"],
+            "matches": ["<all_urls>"],
             "js": ["contentScript.js"],
             "css": ["style.css"]
         }
     ],
     "background": {
         "service_worker": "background.js"
-      }
+    },
+    "browser_specific_settings": {
+        "edge": {
+            "minimum_version": "90.0.0"
+        }
+    }
 }

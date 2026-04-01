@@ -669,40 +669,44 @@ function fillDescriptionWithNakliyeMontaj() {
 }
 
 function fillMaterialColumn() {
-
-    // Satırları al
-    const dataRows = [...rows].slice(1); // İlk satır (başlık satırı) dışındaki tüm satırları seç
+    const dataRows = [...rows].slice(1);
 
     dataRows.forEach((row) => {
         const tds = row.querySelectorAll("td");
         const receiptNo = tds[8].textContent.trim();
+
+        if (!receiptNo) return;
+
         const oasisUrl = `https://ysdepo-pilot.arcelik.com/YsDepoYonetimiApi/api/DepoYonetimi/MaterialSearchDetail/${receiptNo}/FisNo/6058`;
-        let headers = new Headers();
-        headers.append("Authorization", `Bearer ${oasisToken}`);
 
         fetch(oasisUrl, {
             method: "GET",
-            headers: headers,
+            headers: {
+                "Authorization": `Bearer ${oasisToken}`
+            },
         })
-            .then((response) => response.json())
-            .then((data) => {
-                if (data) {
-                    const materialCell = tds[7].querySelector("textarea");
-                    let materials = "";
-                    data.forEach((material, index) => {
-                        materials += material.MALZEME_STOK_NO;
-                        if (index < data.length - 1) {
-                            materials += ", ";
-                        }
-                    })
-                    materialCell.value = materials;
-                    autoGrowTextarea();
-                }
-            })
-            .catch((error) => {
-                console.error("Hata oluştu:", error);
-            });
-    })
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error("HTTP error: " + response.status);
+            }
+            return response.json();
+        })
+        .then((data) => {
+            if (!data) return;
+
+            const materialCell = tds[7].querySelector("textarea");
+
+            const materials = data
+                .map(m => m.MALZEME_STOK_NO)
+                .join(", ");
+
+            materialCell.value = materials;
+            autoGrowTextarea();
+        })
+        .catch((error) => {
+            console.error("Material fetch error:", error.message);
+        });
+    });
 }
 
 function autoGrowTextarea() {

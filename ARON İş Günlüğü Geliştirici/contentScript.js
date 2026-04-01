@@ -167,9 +167,18 @@ async function run() {
 }
 
 // Mesaj dinleyicisi ekle
-chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === 'runExtraction') {
-        await run();
-        sendResponse({ success: true });
+        (async () => {
+            try {
+                await run();
+                sendResponse({ success: true });
+            } catch (e) {
+                console.error(e);
+                sendResponse({ success: false });
+            }
+        })();
+
+        return true; //  asenkron yanıt vereceğimizi belirtmek için
     }
 });

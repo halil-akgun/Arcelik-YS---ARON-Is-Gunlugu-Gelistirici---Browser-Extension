@@ -40,7 +40,7 @@ chrome.action.onClicked.addListener((tab) => {
     // Content script'e runExtraction mesajı gönder
     chrome.tabs.sendMessage(tab.id, { action: 'runExtraction' }, (response) => {
       if (chrome.runtime.lastError) {
-        console.error('[ARON] Mesaj gönderme hatası:', chrome.runtime.lastError);
+        console.error('[ARON ERROR]', chrome.runtime.lastError.message);
       } else if (response && response.success) {
         console.log('[ARON] Extraction tamamlandı, editor açılıyor');
         // Extraction tamamlandıktan sonra editor.html aç
