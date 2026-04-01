@@ -35,21 +35,18 @@ let contentPort = null;
 
 // Extension icon tıklandığında çalışan fonksiyon
 chrome.action.onClicked.addListener((tab) => {
-  // aron.arcelik.com veya export*.html dosyalarında çalışsın
-  if (tab.url && (tab.url.includes('aron.arcelik.com') || /export.*\.html$/.test(tab.url))) {
-    // Content script'e runExtraction mesajı gönder
-    chrome.tabs.sendMessage(tab.id, { action: 'runExtraction' }, (response) => {
-      if (chrome.runtime.lastError) {
-        console.error('[ARON ERROR]', chrome.runtime.lastError.message);
-      } else if (response && response.success) {
-        console.log('[ARON] Extraction tamamlandı, editor açılıyor');
-        // Extraction tamamlandıktan sonra editor.html aç
-        chrome.tabs.create({
-          url: chrome.runtime.getURL('editor.html')
-        });
-      }
-    });
-  }
+  // Content script'e runExtraction mesajı gönder
+  chrome.tabs.sendMessage(tab.id, { action: 'runExtraction' }, (response) => {
+    if (chrome.runtime.lastError) {
+      console.error('[ARON ERROR]', chrome.runtime.lastError.message);
+    } else if (response && response.success) {
+      console.log('[ARON] Extraction tamamlandı, editor açılıyor');
+      // Extraction tamamlandıktan sonra editor.html aç
+      chrome.tabs.create({
+        url: chrome.runtime.getURL('editor.html')
+      });
+    }
+  });
 });
 
 // İçerik betiği ve arka plan betiği arasında kullanılacak bir port oluştur
